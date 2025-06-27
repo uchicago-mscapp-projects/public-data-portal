@@ -1,7 +1,5 @@
 # DJOK: Django Starter Template
 
-<https://git.unnamed.computer/jpt/djok>
-
 This is our opinionated template for starting new Django projects.
 
 It adds a few libraries useful for every Django project, with reasonable starting configurations.
