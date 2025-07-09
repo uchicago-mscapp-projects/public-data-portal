@@ -16,6 +16,16 @@ class Publisher(models.Model):
     url = models.URLField()
 
 
+class TemporalCollection(models.Model):
+    """
+    Represents a collection of DataSet that approximately represents the
+    same data across different time periods.
+
+    Example: Quarterly Traffic Tickets or Annual Geographic Boundaries.
+    """
+    name = models.TextField()
+
+
 class DataSet(models.Model):
     """
     Fundamental unit of the catalog, a single data set.
@@ -26,49 +36,12 @@ class DataSet(models.Model):
     TODO: some data sets are static, but some may update periodically
           without creating a new release
     """
-
-class DataSetFile(models.Model):
-    """
-    A downloadable artifact associated with a dataset.
-
-    Some datasets may consist of multiple related files, and others may
-    be offered in multiple formats.
-    """
-
-
-    
-class IdentifierKind(models.Model):
-    """
-    A kind of identifier common across data sets.
-
-    Example: FIPS, ISO-3166
-    """
-
-
-class Identifier(models.Model):
-    """
-    An instance of a known identifier of an IdentifierKind.
-
-    Example: 06 (FIPS), DK (ISO)
-    """
-
-
-class Crosswalk(models.Model):
-    """
-    A relationship between two identifiers.
-    """
-
-
-# class GeoProjection(?)
-
-
-class TemporalCollection(models.Model):
-    """
-    Represents a collection of DataSet that approximately represents the
-    same data across different time periods.
-
-    Example: Quarterly Traffic Tickets or Annual Geographic Boundaries.
-    """
+    name = models.TextField()
+    year = models.IntegerField()
+    upload_date_time = models.DateTimeField()
+    publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT)
+    temporal_collection = models.ForeignKey(TemporalCollection, on_delete=models.SET_NULL, null=True, blank=True)
+    quality_score = models.DecimalField(max_digits=5, decimal_places=2)
 
 
 class CuratedCollection(models.Model):
@@ -78,3 +51,47 @@ class CuratedCollection(models.Model):
 
     Example: "Midwestern Agriculture" or "Solar Energy"
     """
+    name = models.TextField()
+    datasets = models.ManyToManyField(DataSet, blank=True, related_name="curated_collections")
+
+
+class DataSetFile(models.Model):
+    """
+    A downloadable artifact associated with a dataset.
+
+    Some datasets may consist of multiple related files, and others may
+    be offered in multiple formats.
+    """
+    dataset = models.ForeignKey(DataSet, on_delete=models.CASCADE)
+    original_url = models.URLField()
+    url = models.URLField()
+
+
+class IdentifierKind(models.Model):
+    """
+    A kind of identifier common across data sets.
+
+    Example: FIPS, ISO-3166
+    """
+    kind = models.TextField()
+
+
+class Identifier(models.Model):
+    """
+    An instance of a known identifier of an IdentifierKind.
+
+    Example: 06 (FIPS), DK (ISO)
+    """
+    identifier_kind = models.ForeignKey(IdentifierKind, on_delete=models.CASCADE)
+    identifier = models.TextField()
+
+
+class Crosswalk(models.Model):
+    """
+    A relationship between two identifiers.
+    """
+    primary_identifier = models.ForeignKey(Identifier, on_delete=models.CASCADE)
+    secondary_identifier = models.ForeignKey(Identifier, on_delete=models.CASCADE)
+
+
+# class GeoProjection(?)
