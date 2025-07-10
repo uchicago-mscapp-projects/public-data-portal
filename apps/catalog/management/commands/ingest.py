@@ -3,6 +3,7 @@ from django_typer.management import Typer
 
 app = Typer()
 
+
 @app.command()
 def command(self, name: str):
     try:

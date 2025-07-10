@@ -7,14 +7,17 @@ from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
 from typing import NamedTuple
 
+
 class PartialDataset(NamedTuple):
     """
-        Instantiated like `PartialDataset("https://example.com", date(2025, 1, 1))`
+    Instantiated like `PartialDataset("https://example.com", date(2025, 1, 1))`
 
-        Used to pass pages to fetch from `list_datasets()` to `get_dataset_details`
+    Used to pass pages to fetch from `list_datasets()` to `get_dataset_details`
     """
+
     url: str
     last_updated: date | None
+
 
 class FileFormat(str, Enum):
     """
@@ -22,6 +25,7 @@ class FileFormat(str, Enum):
 
     Feel free to add to this as needed.
     """
+
     CSV = "CSV"
     JSON = "JSON"
     XML = "XML"
@@ -33,14 +37,14 @@ class FileFormat(str, Enum):
     OTHER = "Other"
 
 
-
 class UpstreamFile(BaseModel):
     """
     A single file associated with a dataset.
     """
+
     name: str
     type: FileFormat
-    size_bytes: int = 0 # often unknown
+    size_bytes: int = 0  # often unknown
     url: str
 
 

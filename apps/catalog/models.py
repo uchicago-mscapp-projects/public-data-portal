@@ -27,6 +27,7 @@ class DataSet(models.Model):
           without creating a new release
     """
 
+
 class DataSetFile(models.Model):
     """
     A downloadable artifact associated with a dataset.
@@ -36,7 +37,6 @@ class DataSetFile(models.Model):
     """
 
 
-    
 class IdentifierKind(models.Model):
     """
     A kind of identifier common across data sets.
