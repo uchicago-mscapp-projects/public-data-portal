@@ -5,6 +5,16 @@ pydantic data models for data collection
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
+from typing import NamedTuple
+
+class PartialDataset(NamedTuple):
+    """
+        Instantiated like `PartialDataset("https://example.com", date(2025, 1, 1))`
+
+        Used to pass pages to fetch from `list_datasets()` to `get_dataset_details`
+    """
+    url: str
+    last_updated: date | None
 
 class FileFormat(str, Enum):
     """
