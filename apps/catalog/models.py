@@ -18,15 +18,15 @@ class Continent(models.TextChoices):
     OC = "oc", _("Oceania")
     UN = "un", _("Unknown/Multiple")
 
-class FileType(models.TextChoices):
+class FileType(models.TextChoices): # these should be kept in sync manually with the file types in ingestion.data_types
     CSV = "csv", _("Comma-Separated Values")
     TSV = "tsv", _("Tab-Separated Values")
     XLS = "xls", _("Excel Spreadsheet")
-    DB = "db", _("SQLite Database")
+    SQLITE = "sqlite", _("SQLite Database")
     PARQUET = "parquet", _("Parquet Database")
     JSON = "json", _("JSON Object")
     XML = "xml", _("XML File")
-    GEO_JSON = "geojson", _("Geo JSON")
+    GEOJSON = "geojson", _("GeoJSON")
     SHP = "shp", _("Shapefile")
     OTHER = "other", _("Other File Type")
 
@@ -54,10 +54,11 @@ class Publisher(models.Model):
 
 class Region(models.Model):
     name = models.TextField()
+    country_code = models.CharField(max_length=2)
     continent = models.CharField(max_length=2, choices=Continent)
 
     def __str__(self):
-        return f"{self.name} - {self.continent}"
+        return f"{self.name} - {self.country_code} - {self.continent}"
 
 
 class TemporalCollection(models.Model):
@@ -124,10 +125,10 @@ class DataSetFile(models.Model):
     original_url = models.URLField()
     url = models.URLField()
     file_type = models.CharField(choices=FileType)
-    file_size = models.IntegerField() # as kilobytes? megabytes?
+    file_size_mb = models.IntegerField() # file size in megabytes
 
     def __str__(self):
-        return f"{self.dataset.name} File: {self.file_type}, {self.file_size}"
+        return f"{self.dataset.name} File: {self.file_type}, {self.file_size_mb} MB"
 
 
 class IdentifierKind(models.Model):
