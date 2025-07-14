@@ -9,15 +9,6 @@ class PublisherKind(models.TextChoices):
     NGO = "ng", _("Non-Governmental Organization")
     ACADEMIC = "ac", _("Academic")
 
-class Continent(models.TextChoices):
-    NA = "na", _("North America")
-    SA = "sa", _("South America")
-    EU = "eu", _("Europe")
-    AF = "af", _("Africa")
-    AS = "as", _("Asia")
-    OC = "oc", _("Oceania")
-    UN = "un", _("Unknown/Multiple")
-
 class FileType(models.TextChoices): # these should be kept in sync manually with the file types in ingestion.data_types
     CSV = "csv", _("Comma-Separated Values")
     TSV = "tsv", _("Tab-Separated Values")
@@ -55,10 +46,9 @@ class Publisher(models.Model):
 class Region(models.Model):
     name = models.TextField()
     country_code = models.CharField(max_length=2)
-    continent = models.CharField(max_length=2, choices=Continent)
 
     def __str__(self):
-        return f"{self.name} - {self.country_code} - {self.continent}"
+        return f"{self.name} - {self.country_code}"
 
 
 class TemporalCollection(models.Model):
