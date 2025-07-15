@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import User
+from apps.accounts.models import User
 from catalog.models import DataSet
 
 # class History(models.Model):?

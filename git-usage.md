@@ -38,7 +38,7 @@ Whenever it is time to start a new branch, start on `main`, the recommended flow
 ```shell
 $ git switch main         # back to main
 $ git pull origin main    # update to latest
-$ git switch -c new-branch 
+$ git switch -c new-branch
 ```
 
 This is also true if you need to work on two things at once, but hopefully we can avoid that.

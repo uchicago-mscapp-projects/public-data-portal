@@ -13,6 +13,7 @@ dependencies = [
     "django-typer>=3.1.0,<4",
     "gunicorn>=23.0.0",
     "pre-commit>=4.2.0",
+    "pydantic>=2.11.7",
     "pytest-django>=4.11.1,<5",
     "rich>=14.0.0",
     "ruff>=0.11.4",
