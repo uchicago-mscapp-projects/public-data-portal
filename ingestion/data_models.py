@@ -19,6 +19,7 @@ class PartialDataset(NamedTuple):
     last_updated: date | None
 
 
+# NOTE: keep sorted & in sync with catalog.models
 class FileFormat(str, Enum):
     """
     Used as a constraint to avoid us having "csv" and "comma-separated", etc.
@@ -26,15 +27,17 @@ class FileFormat(str, Enum):
     Feel free to add to this as needed.
     """
 
-    CSV = "CSV"
-    JSON = "JSON"
+    CSV = "csv"
+    GEOJSON = "geojson"
+    JSON = "json"
+    KML = "kml"
+    OTHER = "other"
+    PARQUET = "parquet"
+    SHAPEFILE = "shp"
+    SQLITE = "sqlite"
+    TSV = "tsv"
+    XLS = "xls"
     XML = "XML"
-    EXCEL = "Excel"
-    PDF = "PDF"
-    SHAPEFILE = "Shapefile"
-    GEOJSON = "GeoJSON"
-    KML = "KML"
-    OTHER = "Other"
 
 
 class UpstreamFile(BaseModel):
@@ -43,8 +46,8 @@ class UpstreamFile(BaseModel):
     """
 
     name: str
-    type: FileFormat
-    size_bytes: int = 0  # often unknown
+    file_type: FileFormat
+    file_size_mb: int = 0  # often unknown
     url: str
 
 
@@ -63,21 +66,34 @@ class AltStr(BaseModel):
 
 
 class UpstreamDataset(BaseModel):
-    # required fields ##################
+    """
+    This model represents a scraped dataset, fields should
+    roughly correspond to catalog.models.DataSet, but some variation
+    will be necessary to allow for flexiblity at scrape time.
+    """
 
-    source_url: str
-    upstream_id: str
-    pub_date: date
-    update_date: date
-    publisher_name: str
+    # required fields ##################
 
     # These will be the default name/description.
     #  We should make a choice: are these in English,
     #  or the language of the source?
     name: str
-    desscription: str
+    description: str
 
-    # optional fields ##################
+    # time range covered by data
+    start_date: date | None
+    end_date: date | None
+    # time uploaded/updated on source
+    upstream_upload_time: date | None
+
+    publisher_name: str
+    publisher_url: str | None = ""
+
+    region_name: str
+    region_country_code: str
+
+    source_url: str
+    upstream_id: str
 
     license: str = ""
 
@@ -85,7 +101,7 @@ class UpstreamDataset(BaseModel):
 
     # These can be used to store variations & translations.
     alternate_names: list[AltStr] = Field(default_factory=list)
-    alternate_descriptoins: list[AltStr] = Field(default_factory=list)
+    alternate_descriptions: list[AltStr] = Field(default_factory=list)
 
     # Collect from source as-is, we'll figure out what to do with them during
     # ingestion.
