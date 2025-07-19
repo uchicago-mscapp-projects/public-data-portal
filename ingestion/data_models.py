@@ -4,7 +4,7 @@ pydantic data models for data collection
 
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
-from datetime import date
+from datetime import date, datetime
 from typing import NamedTuple
 
 
@@ -45,6 +45,8 @@ class UpstreamFile(BaseModel):
     A single file associated with a dataset.
     """
 
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, validate_assignment=True)
+
     name: str
     file_type: FileFormat
     file_size_mb: int = 0  # often unknown
@@ -60,6 +62,8 @@ class AltStr(BaseModel):
     (en, "Hey", "informal")
     """
 
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, validate_assignment=True)
+
     value: str
     lang: str
     note: str = ""
@@ -72,7 +76,7 @@ class UpstreamDataset(BaseModel):
     will be necessary to allow for flexiblity at scrape time.
     """
 
-    # required fields ##################
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
     # These will be the default name/description.
     #  We should make a choice: are these in English,
@@ -80,14 +84,18 @@ class UpstreamDataset(BaseModel):
     name: str
     description: str
 
-    # time range covered by data
-    start_date: date | None
-    end_date: date | None
     # time uploaded/updated on source
-    upstream_upload_time: date | None
+    upstream_upload_time: datetime
+
+    # time range covered by data
+    start_date: date | None = None
+    end_date: date | None = None
 
     publisher_name: str
     publisher_url: str | None = ""
+    # Deduplication logic would be to favor pubisher_upstream_id if present, otherwise
+    # we'll use publisher_name.
+    publisher_upstream_id: str = ""
 
     region_name: str
     region_country_code: str
@@ -107,6 +115,9 @@ class UpstreamDataset(BaseModel):
     # ingestion.
     tags: list[str] = Field(default_factory=list)
 
-    # Deduplication logic would be to favor pubisher_upstream_id if present, otherwise
-    # we'll use publisher_name.
-    publisher_upstream_id: str = ""
+    def add_file(self, url: str, file_type: FileFormat, name: str = "", file_size_mb: int = 0):
+        if file_type.lower() == "excel":
+            file_type = "xls"
+        self.files.append(
+            UpstreamFile(url=url, file_type=file_type, name=name, file_size_mb=file_size_mb)
+        )
