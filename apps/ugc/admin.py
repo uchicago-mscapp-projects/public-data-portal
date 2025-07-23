@@ -12,7 +12,7 @@ class ProjectDataSetInline(admin.TabularInline):
 
 class ProjectAdmin(admin.ModelAdmin):
     inlines = [
-        ProjectDataSetInline
+        ProjectDataSetInline,
     ]
 
 admin.site.register(Project, ProjectAdmin)
