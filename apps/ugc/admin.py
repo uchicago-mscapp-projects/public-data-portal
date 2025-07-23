@@ -6,12 +6,20 @@ class CommentAdmin(admin.ModelAdmin):
 
 admin.site.register(Comment, CommentAdmin)
 
+
+class ProjectDataSetInline(admin.TabularInline):
+    model = ProjectDataSet
+
 class ProjectAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        ProjectDataSetInline
+    ]
 
 admin.site.register(Project, ProjectAdmin)
 
+"""
 class ProjectDataSetAdmin(admin.ModelAdmin):
     pass
 
 admin.site.register(ProjectDataSet, ProjectDataSetAdmin)
+"""
