@@ -4,7 +4,7 @@ A loose collection of notes from meetings.
 
 ## User Interviews  `
 
-### Interview A--- 
+### Interview A---
 
 - int'l student, has worked with gov. data in home country
    - expected federal data but lots is actually at state level
@@ -18,7 +18,7 @@ A loose collection of notes from meetings.
 - has used Chicago/Google data portals
 - team of "data janitors", cleaning econ data published by government and republishing more useful
   - having an API is important
-  
+
 
 ### Interview W---
 

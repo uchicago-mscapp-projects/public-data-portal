@@ -70,8 +70,8 @@ INSTALLED_APPS = [
     "django_structlog",
     "django_typer",
     "apps.accounts",
-    "apps.catalog.apps.CatalogConfig",
-    "apps.ugc.apps.UgcConfig",
+    "apps.catalog",
+    "apps.ugc",
 ]
 
 MIDDLEWARE = [
