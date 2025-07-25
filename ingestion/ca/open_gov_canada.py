@@ -9,8 +9,7 @@ import io
 
 SITE_URL = "https://search.open.canada.ca/opendata/"
 CSV_URL = "https://open.canada.ca/data/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7/resource/312a65c5-d0bc-4445-8a24-95b2690cc62b/download/main.csv"
-CSV_URL = "https://opencanada.blob.core.windows.net/opengovprod/resources/312a65c5-d0bc-4445-8a24-95b2690cc62b/main.csv?se=2025-07-25T18%3A09%3A01Z&sp=r&sv=2024-08-04&sr=b&sig=7nYn1wABmJ3Lt3STKBdbe7XkCH6m%2BRAM35Wx0v2wiBk%3D"
-RECORD_URL = "https://open.canada.ca/data/en/api/3/action/datastore_search?resource_id={}"
+#RECORD_URL = "https://open.canada.ca/data/en/api/3/action/datastore_search?resource_id={}"
 RECORD_URL = "https://open.canada.ca/data/api/action/package_show?id={}"
 
 
@@ -32,11 +31,11 @@ def list_datasets() -> Generator[PartialDataset, None, None]:
     """
     data = make_request(CSV_URL)
     for row in csv.DictReader(io.StringIO(data.text)):
-        #replace this with a better if-else structure
-        try:
-            last_updated = parse_date(row["date_modified"])
-        except: 
+        # fill last_updated with date_modified if it exists or date_published if not
+        if row["date_modified"]=="":
             last_updated = parse_date(row["date_published"])
+        else:
+            last_updated = parse_date(row["date_modified"])
         yield PartialDataset(
             url=RECORD_URL.format(row["id"]),
             last_updated=last_updated,
@@ -48,36 +47,24 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     resp = make_request(pd.url)
     root = lxml.html.fromstring(resp.content)
 
-    # main dataset info is tucked away in JSON on this attribute
-    dataset_schema = root.xpath("//div[@ctx-dataset-schema]/@ctx-dataset-schema")[0]
-    # the JSON has improperly escaped data
-    dataset_schema = dataset_schema.replace(r"\{", "{").replace(r"\}", "}")
-    data = json.loads(dataset_schema)
-
-    # there is an ld+json microformat embedded on the page with additional information
-    ld_json = root.xpath("//script[@type='application/ld+json']/text()")[0]
-    ld_record = json.loads(ld_json)
-
-    # TODO: if this microformat is used frequently, we could create
-    # automatic extraction for it
-    #
-    print(ld_record)
+    ld_json = json.loads(root.text_content())
+    ld_record = ld_json['result']
 
     ds = UpstreamDataset(
-        name=ld_record["name"],
-        description=ld_record["description"],
-        upstream_id=data["datasetid"],
+        name=ld_record["title"],
+        description=ld_record["notes"],
+        upstream_id=ld_record["id"],
         source_url=pd.url,
-        upstream_upload_time=parse_date(data["basic_metas"]["default"]["modified"]),
-        license=data["basic_metas"]["default"].get("license", ""),
-        tags=ld_record.get("keywords", []),
-        publisher_name="Town of Cary",
-        publisher_url="https://data.townofcary.org",
-        region_name="Cary, NC",
-        region_country_code="us",
+        upstream_upload_time=parse_date(ld_record["date_published"]),
+        license=ld_record["license_title"],
+        tags=ld_record["keywords"]["en"],
+        publisher_name=ld_record["organization"]["title"],
+        publisher_url=SITE_URL,
+        region_name="fill in later",
+        region_country_code="ca",
     )
-    for dist in ld_record["distribution"]:
-        ds.add_file(dist["contentUrl"], file_type=dist["encodingFormat"].lower())
+    for file in ld_record["resources"]:
+        ds.add_file(url=file["url"], file_type=file["format"].lower(), name=file["name"])
     # also present: field names, geographies
 
     return ds
