@@ -28,16 +28,25 @@ class FileFormat(str, Enum):
     """
 
     CSV = "csv"
+    EDI = "edi"
+    ESRI_REST = "esri rest"
+    FGDP = "fgdb/gdb"
     GEOJSON = "geojson"
+    GEOTIFF = "geotif"
+    HTML = "html"
     JSON = "json"
     KML = "kml"
+    KMZ = "kmz"
+    MXD = "mxd"
     OTHER = "other"
     PARQUET = "parquet"
-    SHAPEFILE = "shp"
+    PDF = "pdf"
+    SHP = "shp"
     SQLITE = "sqlite"
     TSV = "tsv"
+    WMS = "wms"
     XLS = "xls"
-    XML = "XML"
+    XML = "xml"
 
 
 class UpstreamFile(BaseModel):

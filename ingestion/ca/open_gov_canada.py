@@ -6,6 +6,8 @@ import lxml.html
 import json
 import csv
 import io
+import re
+from functools import reduce
 
 SITE_URL = "https://search.open.canada.ca/opendata/"
 CSV_URL = "https://open.canada.ca/data/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7/resource/312a65c5-d0bc-4445-8a24-95b2690cc62b/download/main.csv"
@@ -50,6 +52,8 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     ld_json = json.loads(root.text_content())
     ld_record = ld_json['result']
 
+    en_keys = [key for key in ld_record["keywords"].keys() if re.search("^en", key) is not None]
+
     ds = UpstreamDataset(
         name=ld_record["title"],
         description=ld_record["notes"],
@@ -57,7 +61,8 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         source_url=pd.url,
         upstream_upload_time=parse_date(ld_record["date_published"]),
         license=ld_record["license_title"],
-        tags=ld_record["keywords"]["en"],
+        #tags=ld_record["keywords"]["en"],
+        tags = reduce(lambda x, y: x + y, [ld_record["keywords"][key] for key in en_keys]),
         publisher_name=ld_record["organization"]["title"],
         publisher_url=SITE_URL,
         region_name="fill in later",
