@@ -4,12 +4,20 @@ from ingestion.data_models import UpstreamDataset, PartialDataset
 from urllib.parse import urlparse, parse_qs
 import httpx
 import lxml.html
-import json
-import csv
-import io
+import lxml.etree
+import time
 
-INITIAL_LIST_URL = "https://www.oecd.org/en/data/datasets.html?orderBy=mostRelevant&page=0"
+INITIAL_URL = "https://aemint-search-client-funcapp-prod.azurewebsites.net/api/faceted-search?siteName=oecd&interfaceLanguage=en&orderBy=mostRelevant&pageSize=10&hiddenFacets=oecd-content-types%3Adata%2Fdatasets&hiddenFacets=oecd-languages%3Aen"
+LIST_URL = "https://aemint-search-client-funcapp-prod.azurewebsites.net/api/faceted-search?siteName=oecd&interfaceLanguage=en&orderBy=mostRelevant&page={}&pageSize=10&hiddenFacets=oecd-content-types%3Adata%2Fdatasets&hiddenFacets=oecd-languages%3Aen"
+DATASET_URL = "https://sdmx.oecd.org/public/rest/dataflow/{}/{}/?references=all"
+DOWNLOAD_URL = "https://sdmx.oecd.org/public/rest/data/{},{},/all?dimensionAtObservation=AllDimensions&format=csvfile"
 SITE_DOMAIN = "https://www.oecd.org/"
+
+ns = {
+    "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
+    "structure": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
+    "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common"
+}
 
 
 def make_request(url):
@@ -21,108 +29,99 @@ def make_request(url):
     return resp
 
 
-def list_datasets(max_pages):
+def retrieve_results_count():
     """
+    Retrieve total dataset count. 
+    Useful for iterating through page numbers in list_datasets().
     """
-    page = 0
-    curr_link = INITIAL_LIST_URL
-    pd_list = []
-    
-
-    # iterate through pages until we've hit max page limit or there are no next links left
-    while page < max_pages and curr_link is not None:
-        pd_list = pd_list + list_datasets_page(curr_link)
-
-        curr_link = get_next_page_url(
-            curr_link
-        )  # use helper method for link to next page (if exists)
-
-        page += 1
-    
-    return pd_list
+    resp = make_request(INITIAL_URL).json()
+    count = int(resp["total"])
+    return count
 
 
-def list_datasets_page(page_url) -> list[PartialDataset]:
-    
-    page_pds = []
+def list_datasets() -> Generator[PartialDataset, None, None]:
+    """
+    This method can either return a list or `yield` individual
+    items as they're found.
 
-    resp = make_request(page_url)
-    root = lxml.html.fromstring(resp.text)
-
-    search_results = root.get_element_by_id("oecd-faceted-search-results")
-    dataset_rows = search_results.xpath(".//li[@class='cmp-list__item']")
-
-    for row in dataset_rows:
-        #extract link
-        title_elem = row.xpath(".//div[@class='search-result-list-item__title']")[0]
-        url = title_elem.cssselect("a")[0].get("href")
-
-        #extract date
-        date_str = row.xpath(".//span[@class='search-result-list-item__date']/text()")[0]
-
-        page_pds.append(
-            PartialDataset(
-                url=url,
-                last_updated=parse_date(date_str)
+    The version below demonstrates yielding items, but
+    """
+    page_count = retrieve_results_count() // 10
+    for i in range(page_count + 1):
+        data = make_request(LIST_URL.format(i)).json()
+        for row in data["results"]:
+            yield PartialDataset(
+                url=row["url"],
+                last_updated=parse_date(row["publicationDateTime"]),
             )
-        )
-    
-    return page_pds
-
-
-def get_next_page_url(page_url):
-    
-    resp = make_request(page_url)
-    root = lxml.html.fromstring(resp.text)
-
-    # extract hyperlink tag containing pagination link
-    pagination_tag_li = root.xpath("//li[@class='cmp-pagination__next']")[0]	
-    
-    pagination_url = None
-
-    if pagination_tag_li:  # check that next page pagination link exists
-        rel_url = pagination_tag_li.xpath(".//a[@aria-label='Next page']")[0].get("href")  # pull link from next page tag
-        pagination_url = SITE_DOMAIN + rel_url  # pass in scraped relative url with current url to construct absolute url
-
-    return pagination_url
 
 
 def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
-    #xpath('//*[@data-testid="submit-button"]')
-    
-    resp = make_request(pd.url)
-    root = lxml.html.fromstring(resp.text)
-
-    overview_elem = root.get_element_by_id("id_overview_component")
-    api_query_elem = root.xpath('//*[@data-testid="apiqueries-test-id"]')
-
-    name = overview_elem.xpath(".//h1/text()")
-
-    description_div = overview_elem.xpath(".//div")[0]
-    description = description_div.xpath(".//p")[0].text_content().strip()
-
     parsed_url = urlparse(pd.url)
     url_params = parse_qs(parsed_url.query)
-    upstream_id = url_params.get("df[id]", [None])[0]
 
-    source_url = api_query_elem.xpath(".//textarea[@aria-label='Data query']/text()")[0]
+    df_id = url_params.get('df[id]', [None])[0] # retrieve unique DataSet id from url
+    df_ag = url_params.get('df[ag]', [None])[0] # retrieve prefix from url
 
-
-
-# list_datasets() (compiles list of all datasets in OECD with partial dataset for each dataset present)
-#       while page_url is valid / not at limit
-#           pd_list.append(list_datasets_page(page_url))
-#           page_url = get_next_page_url
-#
-# list_datasets_page(page_url) (compiles list of datasets on specific page with pd for each dataset)
-#       retrieve HTML for page_url, iterate through all dataset <li> compiling partial dataset for each
-#
-# get_next_page_url(page_url) (retrieves url for next page if any)
-
-# get_dataset_details(PartialDataset) ()
-#
-#
-#
-#
-
+    if None in (df_id, df_ag):
+        return None
     
+    resp = make_request(DATASET_URL.format(df_ag, df_id))
+    root = lxml.etree.fromstring(resp.content)
+
+    header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
+    name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
+    desc_html_en = header_elem.xpath('.//common:Description[@xml:lang="en"]/text()', namespaces=ns)[0]
+    desc_en = ""
+    if desc_html_en is not None:
+        # strip html from description
+        desc_en = lxml.html.fromstring(desc_html_en).text_content().strip()
+    tags_en = get_dataset_tags(root)
+
+    ds = UpstreamDataset(
+        name=name_en,
+        description=desc_en,
+        upstream_id=df_id,
+        source_url=pd.url,
+        upstream_upload_time=pd.last_updated,
+        license="", # difficulty finding
+        tags=tags_en,
+        publisher_name="OECD",
+        publisher_url=SITE_DOMAIN,
+        publisher_upstream_id=df_id,
+        region_name="", # lets talk -> multiple (many) regions per dataset
+        region_country_code="",
+    )
+    download_url = DOWNLOAD_URL.format(df_ag, df_id)
+    ds.add_file(download_url, file_type="csv")
+    # also present: record frequency, time period, countries referenced
+    
+    time.sleep(5) # avoid '429 Too Many Requests'
+
+    return ds
+
+
+def get_dataset_tags(root):
+    """
+    This method retrieves a list of unique categorisations for a specific dataset.
+
+    Each dataset seems to typically have only one categorisation but can occasionally
+    have multiple.
+    """
+    tags = set()
+    categorisations = root.xpath('//structure:Categorisation', namespaces=ns)
+    categories = root.xpath('//structure:Category', namespaces=ns)
+
+    for categorisation in categorisations:
+        target = categorisation.xpath('.//structure:Target', namespaces=ns)[0]
+        ref_id = target.xpath('.//Ref')[0].get("id")
+        category_ids = ref_id.split(".")
+        category_id = category_ids[-1] # only retrieve lowest / most specific categorisation
+
+        for category in categories: # search for category name in category structure provided
+            if category.get("id") == category_id:
+                category_name = category.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
+                tags.add(category_name)
+                break
+    
+    return list(tags)
