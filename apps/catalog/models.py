@@ -13,6 +13,7 @@ class PublisherKind(models.TextChoices):
 # NOTE: keep sorted & in sync with ingestion.data_models
 class FileType(models.TextChoices):
     CSV = "csv", _("Comma-Separated Values")
+    DOCX = "docx", _("Office Open XML")
     EDI = "edi", _("Electronic Data Interchange")
     ESRI_REST = "esri rest", _("ESRI REST API File")
     FGDB = "fgdb/gdb", _("File Geodatabase")
@@ -28,9 +29,11 @@ class FileType(models.TextChoices):
     PDF = "pdf", _("PDF (Portable Document Format)")
     SHP = "shp", _("Shapefile")
     SQLITE = "sqlite", _("SQLite Database")
+    TIFF = "tiff", _("Tag Image File Format")
     TSV = "tsv", _("Tab-Separated Values")
     WMS = "wms", _("ArcGIS Web Map Service")
     XLS = "xls", _("Excel Spreadsheet")
+    XLSX = "xlsx", _("Excel Open XML Spreadsheet")
     XML = "xml", _("XML File")
 
 

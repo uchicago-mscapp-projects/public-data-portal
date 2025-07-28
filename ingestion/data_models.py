@@ -28,6 +28,7 @@ class FileFormat(str, Enum):
     """
 
     CSV = "csv"
+    DOCX = "docx"
     EDI = "edi"
     ESRI_REST = "esri rest"
     FGDP = "fgdb/gdb"
@@ -43,9 +44,11 @@ class FileFormat(str, Enum):
     PDF = "pdf"
     SHP = "shp"
     SQLITE = "sqlite"
+    TIFF = "tiff"
     TSV = "tsv"
     WMS = "wms"
     XLS = "xls"
+    XLSX = "xlsx"
     XML = "xml"
 
 
