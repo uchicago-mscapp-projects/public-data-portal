@@ -4,15 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('catalog', '0001_initial'),
+        ("catalog", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='datasetfile',
-            name='file_type',
-            field=models.CharField(choices=[('csv', 'Comma-Separated Values'), ('geojson', 'GeoJSON'), ('html', 'HTML'), ('json', 'JSON Object'), ('kml', 'KML (GeoXML)'), ('other', 'Other File Type'), ('parquet', 'Parquet Database'), ('shp', 'Shapefile'), ('sqlite', 'SQLite Database'), ('tsv', 'Tab-Separated Values'), ('xls', 'Excel Spreadsheet'), ('xml', 'XML File')]),
+            model_name="datasetfile",
+            name="file_type",
+            field=models.CharField(
+                choices=[
+                    ("csv", "Comma-Separated Values"),
+                    ("geojson", "GeoJSON"),
+                    ("html", "HTML"),
+                    ("json", "JSON Object"),
+                    ("kml", "KML (GeoXML)"),
+                    ("other", "Other File Type"),
+                    ("parquet", "Parquet Database"),
+                    ("shp", "Shapefile"),
+                    ("sqlite", "SQLite Database"),
+                    ("tsv", "Tab-Separated Values"),
+                    ("xls", "Excel Spreadsheet"),
+                    ("xml", "XML File"),
+                ]
+            ),
         ),
     ]
