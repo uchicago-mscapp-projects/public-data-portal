@@ -13,27 +13,27 @@ class PublisherKind(models.TextChoices):
 # NOTE: keep sorted & in sync with ingestion.data_models
 class FileType(models.TextChoices):
     CSV = "csv", _("Comma-Separated Values")
-    DOCX = "docx", _("Office Open XML")
-    EDI = "edi", _("Electronic Data Interchange")
-    ESRI_REST = "esri rest", _("ESRI REST API File")
-    FGDB = "fgdb/gdb", _("File Geodatabase")
+    DOCX = "docx", _("Office Open XML") # other
+    EDI = "edi", _("Electronic Data Interchange") # other
+    ESRI_REST = "esri rest", _("ESRI REST API File") # other
+    FGDB = "fgdb/gdb", _("File Geodatabase") # keep
     GEOJSON = "geojson", _("GeoJSON")
-    GEOTIFF = "geotif", _("GeoTIFF")
-    HTML = "html", _("HTML")
+    GEOTIFF = "geotif", _("GeoTIFF") # geo other
+    HTML = "html", _("HTML") # other
     JSON = "json", _("JSON Object")
     KML = "kml", _("KML (GeoXML)")
-    KMZ = "kmz", _("Keyhole Markup Language KMZ")
-    MXD = "mxd", _("ArcGIS MXD File")
+    KMZ = "kmz", _("Keyhole Markup Language KMZ") # other
+    MXD = "mxd", _("ArcGIS MXD File") # geo other
     OTHER = "other", _("Other File Type")
     PARQUET = "parquet", _("Parquet Database")
-    PDF = "pdf", _("PDF (Portable Document Format)")
+    PDF = "pdf", _("PDF (Portable Document Format)") # other
     SHP = "shp", _("Shapefile")
     SQLITE = "sqlite", _("SQLite Database")
-    TIFF = "tiff", _("Tag Image File Format")
+    TIFF = "tiff", _("Tag Image File Format") # other
     TSV = "tsv", _("Tab-Separated Values")
-    WMS = "wms", _("ArcGIS Web Map Service")
+    WMS = "wms", _("ArcGIS Web Map Service") # geo other
     XLS = "xls", _("Excel Spreadsheet")
-    XLSX = "xlsx", _("Excel Open XML Spreadsheet")
+    XLSX = "xlsx", _("Excel Open XML Spreadsheet") # keep
     XML = "xml", _("XML File")
 
 

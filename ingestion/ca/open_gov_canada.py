@@ -52,24 +52,42 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     ld_json = json.loads(root.text_content())
     ld_record = ld_json["result"]
 
-    en_keys = [key for key in ld_record["keywords"].keys() if re.search("^en", key) is not None]
-
     ds = UpstreamDataset(
         name=ld_record["title"],
         description=ld_record["notes"],
-        # TO DO: alternate name & description
+        alternate_names=list(ld_record["title_translated"].values()),
+        alternate_descriptions=list(ld_record["notes_translated"].values()),
         upstream_id=ld_record["id"],
         source_url=pd.url,
         upstream_upload_time=parse_date(ld_record["date_published"]),
         license=ld_record["license_title"],
-        # tags=ld_record["keywords"]["en"],
-        tags=reduce(lambda x, y: x + y, [ld_record["keywords"][key] for key in en_keys]),  # TO DO
+        # subject & topic_category fields are lists, keywords is dict with lists for each language
+        tags=reduce(lambda x, y: x + y, [ld_record["subject"], ld_record["topic_category"], [ld_record["keywords"][lang] for lang in ld_record["keywords"].keys()]]),
         publisher_name=ld_record["organization"]["title"],
         publisher_url=SITE_URL,
-        region_name="fill in later",  # TO DO
+        region_name="Canada",
+        # TO DO: subregion
         region_country_code="ca",
     )
     for file in ld_record["resources"]:
         ds.add_file(url=file["url"], file_type=file["format"].lower(), name=file["name"])
 
     return ds
+
+# ALL OPEN GOV FILE FORMATS AND WHAT TO DO WITH THEM:
+
+# ALL CANADIAN PROVINCES:
+"""
+QUEBEC = "Government and Municipalities of Québec | Gouvernement et municipalités du Québec"
+ALBERTA = "Government of Alberta"
+BRITISH_COLUMBIA = "Government of British Columbia"
+MANITOBA = "Government of Manitoba"
+NEW_BRUNSWICK = "Government of New Brunswick"
+NEWFOUNDLAND_LABRADOR
+NORTHWEST_TERRITORIES
+NOVA_SCOTIA
+ONTARIO
+PRINCE_EDWARD
+SASKATCHEWAN
+YUKON
+"""
