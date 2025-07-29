@@ -43,6 +43,18 @@ $ git switch -c new-branch
 
 This is also true if you need to work on two things at once, but hopefully we can avoid that.
 
+## pre-commit
+
+We are using [pre-commit](https://pre-commit.com) to keep the code tidy as we go you can use it in one of two ways:
+
+1. `uvx pre-commit install` will ensure that the pre-commit checks run *before* every commit you make, this can be a bit annoying at first, but will ensure you never commit non-linting code.
+
+2. You can instead run `uvx pre-commit run -a` to check all files, this is also useful to clean up a PR.
+
+`ruff` can fix many things, but sometimes you'll need to manually edit & recommit files to fix more complex linting issues.
+
+(`uvx` is installed with `uv` and meant for running dev tools like this separate from any given project config, let me know if you have issues running it)
+
 ## Code Review
 
 1. Read through the code once to get a general understanding of what it does.
