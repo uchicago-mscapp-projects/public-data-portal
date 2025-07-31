@@ -1,6 +1,7 @@
 from typing import Generator
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset
+from ingestion.utils import make_request
 import httpx
 import lxml.html
 import json
@@ -9,21 +10,10 @@ import io
 
 """
 The town uses the "OpenDataSoft" platform & API.
-
-
 """
 
 CSV_URL = "https://data.townofcary.org/api/explore/v2.1/catalog/exports/csv?delimiter=%2C&lang=en"
 RECORD_URL = "https://data.townofcary.org/explore/dataset/{}/"
-
-
-def make_request(url):
-    """
-    Make an HTTP request with logging & error checking.
-    """
-    resp = httpx.get(url)
-    resp.raise_for_status()
-    return resp
 
 
 def list_datasets() -> Generator[PartialDataset, None, None]:
