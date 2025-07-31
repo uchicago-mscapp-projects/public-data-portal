@@ -1,6 +1,6 @@
 from typing import Generator
 from dateutil.parser import parse as parse_date
-from ingestion.data_models import UpstreamDataset, PartialDataset
+from ingestion.data_models import UpstreamDataset, PartialDataset, AltStr
 import httpx
 import lxml.html
 import json
@@ -55,8 +55,10 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     ds = UpstreamDataset(
         name=ld_record["title"],
         description=ld_record["notes"],
-        alternate_names=list(ld_record["title_translated"].values()),
-        alternate_descriptions=list(ld_record["notes_translated"].values()),
+        # alternate_names=list(ld_record["title_translated"].values()),
+        alternate_names=[AltStr(ld_record["title_translated"][lang], lang) for lang in ld_record["title_translated"].keys()],
+        #alternate_descriptions=list(ld_record["notes_translated"].values()),
+        alternate_descriptions=[AltStr(ld_record["notes_translated"][lang], lang) for lang in ld_record["notes_translated"].keys()],
         upstream_id=ld_record["id"],
         source_url=pd.url,
         upstream_upload_time=parse_date(ld_record["date_published"]),
@@ -70,15 +72,23 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         region_country_code="ca",
     )
     for file in ld_record["resources"]:
-        ds.add_file(url=file["url"], file_type=file["format"].lower(), name=file["name"])
+        ds.add_file(url=file["url"], file_type=get_file_format(file["format"]), name=file["name"])
 
     return ds
 
-# ALL OPEN GOV FILE FORMATS AND WHAT TO DO WITH THEM:
+# handle file formats:
+# TO DO: complete list of file formats
+def get_file_format(original_format):
+    format = original_format.lower()
+    if format in ["ascii grid", "esri rest", "geotif", "mxd", "wms"]:
+        return "other-geo"
+    elif format in ["docx", "edi", "html", "kmz", "pdf", "tiff"]:
+        return "other"
+    else:
+        return format
 
 # ALL CANADIAN PROVINCES:
 """
-QUEBEC = "Government and Municipalities of Québec | Gouvernement et municipalités du Québec"
 ALBERTA = "Government of Alberta"
 BRITISH_COLUMBIA = "Government of British Columbia"
 MANITOBA = "Government of Manitoba"
@@ -86,8 +96,10 @@ NEW_BRUNSWICK = "Government of New Brunswick"
 NEWFOUNDLAND_LABRADOR
 NORTHWEST_TERRITORIES
 NOVA_SCOTIA
+NUNAVUT
 ONTARIO
 PRINCE_EDWARD
+QUEBEC = "Government and Municipalities of Québec | Gouvernement et municipalités du Québec"
 SASKATCHEWAN
 YUKON
 """

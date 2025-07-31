@@ -28,25 +28,16 @@ class FileFormat(str, Enum):
     """
 
     CSV = "csv"
-    DOCX = "docx"
-    EDI = "edi"
-    ESRI_REST = "esri rest"
-    FGDP = "fgdb/gdb"
+    FGDB = "fgdb/gdb"
     GEOJSON = "geojson"
-    GEOTIFF = "geotif"
-    HTML = "html"
     JSON = "json"
     KML = "kml"
-    KMZ = "kmz"
-    MXD = "mxd"
     OTHER = "other"
+    OTHER_GEO = "other-geo"
     PARQUET = "parquet"
-    PDF = "pdf"
     SHP = "shp"
     SQLITE = "sqlite"
-    TIFF = "tiff"
     TSV = "tsv"
-    WMS = "wms"
     XLS = "xls"
     XLSX = "xlsx"
     XML = "xml"
@@ -111,6 +102,7 @@ class UpstreamDataset(BaseModel):
 
     region_name: str
     region_country_code: str
+    subregion: str | None = ""
 
     source_url: str
     upstream_id: str
