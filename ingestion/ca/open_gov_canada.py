@@ -11,7 +11,6 @@ from functools import reduce
 
 SITE_URL = "https://search.open.canada.ca/opendata/"
 CSV_URL = "https://open.canada.ca/data/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7/resource/312a65c5-d0bc-4445-8a24-95b2690cc62b/download/main.csv"
-# RECORD_URL = "https://open.canada.ca/data/en/api/3/action/datastore_search?resource_id={}"
 RECORD_URL = "https://open.canada.ca/data/api/action/package_show?id={}"
 
 
@@ -77,7 +76,7 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         publisher_name=ld_record["organization"]["title"],
         publisher_url=SITE_URL,
         region_name="Canada",
-        # TO DO: subregion
+        subregion=provinces.get(ld_record["organization"]["name"], ""),
         region_country_code="ca",
     )
     for file in ld_record["resources"]:
@@ -90,30 +89,40 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
 # TO DO: complete list of file formats
 def get_file_format(original_format):
     format = original_format.lower()
-    if format in ["ascii grid", "esri rest", "geotif", "gpkg", "mxd", "segy", "wms"]:
+    if format in ["ascii grid", "esri rest", "geotif", "gpkg", "lyr", "mxd", "segy", "wms"]:
         return "other-geo"
-    elif format in ["docx", "edi", "html", "kmz", "pdf", "tiff", "zip"]:
+    elif format in ["docx", "edi", "html", "jpg", "kmz", "pdf", "tiff", "zip"]:
         return "other"
     else:
         return format
 
 
-# ALL CANADIAN PROVINCES:
-"""
-ALBERTA = "Government of Alberta"
-BRITISH_COLUMBIA = "Government of British Columbia"
-MANITOBA = "Government of Manitoba"
-NEW_BRUNSWICK = "Government of New Brunswick"
-NEWFOUNDLAND_LABRADOR
-NORTHWEST_TERRITORIES
-NOVA_SCOTIA
-NUNAVUT
-ONTARIO
-PRINCE_EDWARD
-QUEBEC = "Government and Municipalities of Québec | Gouvernement et municipalités du Québec"
-SASKATCHEWAN
-YUKON
-"""
+# Short codes used in organization->name for provincial govts (and territories)
+ALBERTA = "ab"
+BRITISH_COLUMBIA = "bc-cb"
+MANITOBA = "mb"
+NEW_BRUNSWICK = "nb"
+NEWFOUNDLAND_LABRADOR = "nl-tnl"
+NORTHWEST_TERRITORIES = "nwt-tno"
+NOVA_SCOTIA = "ns-ne"
+ONTARIO = "on"
+PRINCE_EDWARD = "pei-ipe"
+QUEBEC = "qc"
+SASKATCHEWAN = "sk"
+YUKON = "yk"
 
-# fill subregion field, if applicable:
-# def get_ca_province():
+# Dictionary of Canadian provinces/territories
+provinces = {
+    ALBERTA: "Alberta",
+    BRITISH_COLUMBIA: "British Columbia",
+    MANITOBA: "Manitoba",
+    NEW_BRUNSWICK: "New Brunswick",
+    NEWFOUNDLAND_LABRADOR: "Newfoundland and Labrador",
+    NORTHWEST_TERRITORIES: "Northwest Territories",
+    NOVA_SCOTIA: "Nova Scotia",
+    ONTARIO: "Ontario",
+    PRINCE_EDWARD: "Prince Edward Island",
+    QUEBEC: "Québec",
+    SASKATCHEWAN: "Saskatchewan",
+    YUKON: "Yukon",
+}
