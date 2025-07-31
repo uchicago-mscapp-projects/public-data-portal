@@ -80,21 +80,27 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         region_country_code="ca",
     )
     for file in ld_record["resources"]:
-        ds.add_file(url=file["url"], file_type=get_file_format(file["format"]), name=file["name"])
+        ds.add_file(
+            url=file["url"], file_type=handle_file_format(file["format"]), name=file["name"]
+        )
 
     return ds
 
 
 # handle file formats:
 # TO DO: complete list of file formats
-def get_file_format(original_format):
+def handle_file_format(original_format):
     format = original_format.lower()
-    if format in ["ascii grid", "esri rest", "geotif", "gpkg", "lyr", "mxd", "segy", "wms"]:
-        return "other-geo"
-    elif format in ["docx", "edi", "html", "jpg", "kmz", "pdf", "tiff", "zip"]:
-        return "other"
-    else:
+    if format in APPROVED_FORMATS:
         return format
+    elif format in ["sql", "sql lite"]:
+        return "sqlite"
+    elif format in OTHER_GEO_FORMATS:
+        return "other-geo"
+    # elif format in ["docx", "edi", "html", "jpg", "kmz", "pdf", "rdf", "rss", "tiff", "zip"]:
+    #    return "other"
+    else:
+        return "other"
 
 
 # Short codes used in organization->name for provincial govts (and territories)
@@ -126,3 +132,52 @@ provinces = {
     SASKATCHEWAN: "Saskatchewan",
     YUKON: "Yukon",
 }
+
+
+# scrape file formats
+def get_file_formats_from_site():
+    resp = make_request(SITE_URL)
+    tree = lxml.html.fromstring(resp.content)
+    list_item_path = (
+        "/html/body/main/div/div[3]/aside/div[2]/details[7]/ul/li[{}]/div/div[1]/label/div/text()"
+    )
+    file_formats = []
+    for i in range(100):
+        list_item_raw = tree.xpath(list_item_path.format(i))
+        if list_item_raw:
+            list_item = list_item_raw[0].strip().split("\xa0\xa0")
+            file_formats.append(list_item[0].lower())
+    return file_formats
+
+
+ALL_FILE_FORMATS = get_file_formats_from_site()
+APPROVED_FORMATS = [
+    "csv",
+    "fgdb/gdb",
+    "geojson",
+    "json",
+    "kml",
+    "other",
+    "other-geo",
+    "parquet",
+    "shp",
+    "sqlite",
+    "tsv",
+    "xls",
+    "xlsx",
+    "xml",
+]
+OTHER_GEO_FORMATS = [
+    "ascii grid",
+    "esri rest",
+    "geopdf",
+    "geopackage",
+    "geosoftdatabases",
+    "geosoftgrids",
+    "geotif",
+    "gpkg",
+    "lyr",
+    "mxd",
+    "segy",
+    "wms",
+]
