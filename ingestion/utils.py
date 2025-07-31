@@ -1,6 +1,7 @@
 import httpx
 import structlog
 
+# shared logger for all ingestors
 logger = structlog.get_logger("pdp.ingestion")
 
 
