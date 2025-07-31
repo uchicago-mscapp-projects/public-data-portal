@@ -1,8 +1,7 @@
 import importlib
 import structlog
 from django_typer.management import Typer
-
-logger = structlog.get_logger("pdp.ingestion")
+from ingestion.utils import logger
 
 app = Typer()
 
