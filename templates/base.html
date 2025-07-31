@@ -5,13 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <link rel="stylesheet" href="{% static 'css/pico.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bulma.min.css' %}">
     <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
-    <main class="container">
-    {% block content %}
-    {% endblock %}
-    </main>
+  <section class="section">
+    <div class="container">
+      {% block content %}
+      {% endblock %}
+    </div>
+  </section>
   </body>
 </html>
