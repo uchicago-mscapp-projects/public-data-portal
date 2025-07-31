@@ -4,7 +4,7 @@ Documenting decisions we've made with their justifications & considered alternat
 
 ## File Types
 
-Our file type field is meant to assist in searching for useful data, so we will create enum entries for common data types (CSV, XML, XLSX, etc.) that someone might filter on/prefer, but when we encounter uncommon data types or types that are not well-suited for data (PDF, HTML, DOC) we will group those as "Other". 
+Our file type field is meant to assist in searching for useful data, so we will create enum entries for common data types (CSV, XML, XLSX, etc.) that someone might filter on/prefer, but when we encounter uncommon data types or types that are not well-suited for data (PDF, HTML, DOC) we will group those as "Other".
 
 We will also use an "Other - Geo" to group together less common (e.g. not GeoJSON/KML/Shapefile/etc.) geo data types.
 

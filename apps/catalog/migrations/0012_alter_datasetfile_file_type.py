@@ -4,15 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('catalog', '0011_alter_datasetfile_file_type'),
+        ("catalog", "0011_alter_datasetfile_file_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='datasetfile',
-            name='file_type',
-            field=models.CharField(choices=[('csv', 'Comma-Separated Values'), ('fgdb/gdb', 'File Geodatabase'), ('geojson', 'GeoJSON'), ('json', 'JSON Object'), ('kml', 'KML (GeoXML)'), ('other', 'Other File Type'), ('other-geo', 'Other Geo File Type'), ('parquet', 'Parquet Database'), ('shp', 'Shapefile'), ('sqlite', 'SQLite Database'), ('tsv', 'Tab-Separated Values'), ('xls', 'Excel Spreadsheet'), ('xlsx', 'Excel Open XML Spreadsheet'), ('xml', 'XML File')]),
+            model_name="datasetfile",
+            name="file_type",
+            field=models.CharField(
+                choices=[
+                    ("csv", "Comma-Separated Values"),
+                    ("fgdb/gdb", "File Geodatabase"),
+                    ("geojson", "GeoJSON"),
+                    ("json", "JSON Object"),
+                    ("kml", "KML (GeoXML)"),
+                    ("other", "Other File Type"),
+                    ("other-geo", "Other Geo File Type"),
+                    ("parquet", "Parquet Database"),
+                    ("shp", "Shapefile"),
+                    ("sqlite", "SQLite Database"),
+                    ("tsv", "Tab-Separated Values"),
+                    ("xls", "Excel Spreadsheet"),
+                    ("xlsx", "Excel Open XML Spreadsheet"),
+                    ("xml", "XML File"),
+                ]
+            ),
         ),
     ]

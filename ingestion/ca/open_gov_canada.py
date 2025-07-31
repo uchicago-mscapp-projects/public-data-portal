@@ -55,16 +55,25 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     ds = UpstreamDataset(
         name=ld_record["title"],
         description=ld_record["notes"],
-        # alternate_names=list(ld_record["title_translated"].values()),
-        alternate_names=[AltStr(ld_record["title_translated"][lang], lang) for lang in ld_record["title_translated"].keys()],
-        #alternate_descriptions=list(ld_record["notes_translated"].values()),
-        alternate_descriptions=[AltStr(ld_record["notes_translated"][lang], lang) for lang in ld_record["notes_translated"].keys()],
+        alternate_names=[
+            AltStr(value=ld_record["title_translated"][lang], lang=lang)
+            for lang in ld_record["title_translated"].keys()
+        ],
+        alternate_descriptions=[
+            AltStr(value=ld_record["notes_translated"][lang], lang=lang)
+            for lang in ld_record["notes_translated"].keys()
+        ],
         upstream_id=ld_record["id"],
         source_url=pd.url,
         upstream_upload_time=parse_date(ld_record["date_published"]),
         license=ld_record["license_title"],
         # subject & topic_category fields are lists, keywords is dict with lists for each language
-        tags=reduce(lambda x, y: x + y, [ld_record["subject"], ld_record["topic_category"], [ld_record["keywords"][lang] for lang in ld_record["keywords"].keys()]]),
+        tags=ld_record["subject"]
+        + ld_record.get("topic_category", [])
+        + reduce(
+            lambda x, y: x + y,
+            [ld_record["keywords"][lang] for lang in ld_record["keywords"].keys()],
+        ),
         publisher_name=ld_record["organization"]["title"],
         publisher_url=SITE_URL,
         region_name="Canada",
@@ -76,16 +85,18 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
 
     return ds
 
+
 # handle file formats:
 # TO DO: complete list of file formats
 def get_file_format(original_format):
     format = original_format.lower()
-    if format in ["ascii grid", "esri rest", "geotif", "mxd", "wms"]:
+    if format in ["ascii grid", "esri rest", "geotif", "gpkg", "mxd", "segy", "wms"]:
         return "other-geo"
-    elif format in ["docx", "edi", "html", "kmz", "pdf", "tiff"]:
+    elif format in ["docx", "edi", "html", "kmz", "pdf", "tiff", "zip"]:
         return "other"
     else:
         return format
+
 
 # ALL CANADIAN PROVINCES:
 """
@@ -103,3 +114,6 @@ QUEBEC = "Government and Municipalities of Québec | Gouvernement et municipalit
 SASKATCHEWAN
 YUKON
 """
+
+# fill subregion field, if applicable:
+# def get_ca_province():
