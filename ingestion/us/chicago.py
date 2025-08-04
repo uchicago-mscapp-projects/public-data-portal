@@ -1,5 +1,6 @@
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset
+from time import sleep
 import httpx
 import json
 
@@ -7,6 +8,7 @@ import json
 Ingestion script for Socrata-based Chicago data portal.
 """
 
+#URL below pulls up 100 dataset records at preferred offset
 CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false&limit=100&offset={}&order=page_views_total&published=true&q=&search_context=data.cityofchicago.org&show_unsupported_data_federated_assets=false&tags=&approval_status=approved&audience=public"
 
 #to be pulled from new utils
@@ -17,15 +19,12 @@ def make_request(url):
 
     return ping
 
-def extract_updata(url):
-    '''returns list of upstream datasets using catalog'''
-    resp = make_request(CATALOG)
-    #load from json
-    cat = json.loads(resp.text)
+def extract_updata(catalog):
+    '''takes catalog page of 100 datasets, returns list of upstream datasets'''
     upstream_lst = []
 
-    #collect details
-    for ds in cat["results"]:
+    #create UpstreamDatasets
+    for ds in catalog["results"]:
         rs = ds["resource"]
 
         #currently licenses are all either "see terms" or an empty string
@@ -40,7 +39,13 @@ def extract_updata(url):
         else:
             license == "Other"
 
+        tags = ds["classification"].get("domain_category", [])
+
+        if ds["classification"].get("domain_tags", ""):
+                tags = [tags].extend(ds["classification"]["domain_tags"])
+
         uds = UpstreamDataset(
+            name = rs["name"],
             description = rs["description"],
 
             upstream_upload_time = parse_date(rs["updatedAt"]),
@@ -65,22 +70,29 @@ def extract_updata(url):
             ##Authorization issues with various links
             #files= list[UpstreamFile] = Field(default_factory=list),
 
-            tags = ds["classification"].get("domain_tags", []).append(
-                ds["classification"]["domain_category"])
+            tags = tags
             )
         upstream_lst.append(uds)
 
         return upstream_lst
 
 def extract_catalog():
-    '''handles pagination'''
+    '''handles catalog pagination to return complete list of datasets'''
     offset = 0
     url = CATALOG.format(str(offset))
-    resp = make_request(CATALOG)
-    #load from json
+    resp = make_request(url)
+
     cat = json.loads(resp.text)
     upstream_lst = []
 
     while cat["results"]:
-        extract_updata(cat)
+        sleep(1)
+        updata = extract_updata(cat)
+        upstream_lst.extend(updata)
 
+        #next page
+        url = CATALOG.format(str(offset + 100))
+        resp = make_request(url)
+        cat = json.loads(resp.text)
+
+    return upstream_lst
