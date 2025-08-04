@@ -1,8 +1,8 @@
 from typing import Generator
 from dateutil.parser import parse as parse_date
-from ingestion.data_models import UpstreamDataset, PartialDataset
+from ingestion.data_models import UpstreamDataset, PartialDataset, AltStr
+from ingestion.utils import make_request
 from urllib.parse import urlparse, parse_qs
-import httpx
 import lxml.html
 import lxml.etree
 import time
@@ -16,22 +16,13 @@ SITE_DOMAIN = "https://www.oecd.org/"
 ns = {
     "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
     "structure": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
-    "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common"
+    "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
 }
-
-
-def make_request(url):
-    """
-    Make an HTTP request with logging & error checking.
-    """
-    resp = httpx.get(url)
-    resp.raise_for_status()
-    return resp
 
 
 def retrieve_results_count():
     """
-    Retrieve total dataset count. 
+    Retrieve total dataset count.
     Useful for iterating through page numbers in list_datasets().
     """
     resp = make_request(INITIAL_URL).json()
@@ -60,22 +51,34 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     parsed_url = urlparse(pd.url)
     url_params = parse_qs(parsed_url.query)
 
-    df_id = url_params.get('df[id]', [None])[0] # retrieve unique DataSet id from url
-    df_ag = url_params.get('df[ag]', [None])[0] # retrieve prefix from url
+    df_id = url_params.get("df[id]", [None])[0]  # retrieve unique DataSet id from url
+    df_ag = url_params.get("df[ag]", [None])[0]  # retrieve prefix from url
 
     if None in (df_id, df_ag):
         return None
-    
+
     resp = make_request(DATASET_URL.format(df_ag, df_id))
     root = lxml.etree.fromstring(resp.content)
 
     header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
     name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
-    desc_html_en = header_elem.xpath('.//common:Description[@xml:lang="en"]/text()', namespaces=ns)[0]
+    name_fr = header_elem.xpath('.//common:Name[@xml:lang="fr"]/text()', namespaces=ns)[0]
+
+    desc_html_en_lst = header_elem.xpath(
+        './/common:Description[@xml:lang="en"]/text()', namespaces=ns
+    )
+    desc_html_fr_lst = header_elem.xpath(
+        './/common:Description[@xml:lang="fr"]/text()', namespaces=ns
+    )
     desc_en = ""
-    if desc_html_en is not None:
+    desc_fr = ""
+    if len(desc_html_en_lst) > 0:
         # strip html from description
-        desc_en = lxml.html.fromstring(desc_html_en).text_content().strip()
+        desc_en = lxml.html.fromstring(desc_html_en_lst[0]).text_content().strip()
+    if len(desc_html_fr_lst) > 0:
+        # strip html from description
+        desc_fr = lxml.html.fromstring(desc_html_fr_lst[0]).text_content().strip()
+
     tags_en = get_dataset_tags(root)
 
     ds = UpstreamDataset(
@@ -84,19 +87,20 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         upstream_id=df_id,
         source_url=pd.url,
         upstream_upload_time=pd.last_updated,
-        license="", # difficulty finding
+        license="https://www.oecd.org/en/about/terms-conditions.html",
         tags=tags_en,
         publisher_name="OECD",
         publisher_url=SITE_DOMAIN,
         publisher_upstream_id=df_id,
-        region_name="", # lets talk -> multiple (many) regions per dataset
-        region_country_code="",
+        region_name="INT",  # international
+        region_country_code="INT",
+        alternate_names=[AltStr(value=name_fr, lang="fr")],
+        alternate_descriptions=[AltStr(value=desc_fr, lang="fr")],
     )
     download_url = DOWNLOAD_URL.format(df_ag, df_id)
     ds.add_file(download_url, file_type="csv")
-    # also present: record frequency, time period, countries referenced
-    
-    time.sleep(5) # avoid '429 Too Many Requests'
+
+    time.sleep(5)  # avoid '429 Too Many Requests'
 
     return ds
 
@@ -109,19 +113,21 @@ def get_dataset_tags(root):
     have multiple.
     """
     tags = set()
-    categorisations = root.xpath('//structure:Categorisation', namespaces=ns)
-    categories = root.xpath('//structure:Category', namespaces=ns)
+    categorisations = root.xpath("//structure:Categorisation", namespaces=ns)
+    categories = root.xpath("//structure:Category", namespaces=ns)
 
     for categorisation in categorisations:
-        target = categorisation.xpath('.//structure:Target', namespaces=ns)[0]
-        ref_id = target.xpath('.//Ref')[0].get("id")
+        target = categorisation.xpath(".//structure:Target", namespaces=ns)[0]
+        ref_id = target.xpath(".//Ref")[0].get("id")
         category_ids = ref_id.split(".")
-        category_id = category_ids[-1] # only retrieve lowest / most specific categorisation
 
-        for category in categories: # search for category name in category structure provided
-            if category.get("id") == category_id:
-                category_name = category.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
-                tags.add(category_name)
-                break
-    
+        for category_id in category_ids:
+            for category in categories:  # search for category name in category structure provided
+                if category.get("id") == category_id:
+                    category_name = category.xpath(
+                        './/common:Name[@xml:lang="en"]/text()', namespaces=ns
+                    )[0]
+                    tags.add(category_name)
+                    break
+
     return list(tags)
