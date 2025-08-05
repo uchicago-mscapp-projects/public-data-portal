@@ -1,0 +1,14 @@
+{% load allauth %}
+
+{% if attrs.href %}
+  <a href="{{ attrs.href }}" class="button {{ attrs.classes }}">
+  {% slot %}
+  {% endslot %}
+  </a>
+
+{% else %}
+  <button class="button {{ attrs.classes }}">
+  {% slot %}
+  {% endslot %}
+  </button>
+{% endif %}
