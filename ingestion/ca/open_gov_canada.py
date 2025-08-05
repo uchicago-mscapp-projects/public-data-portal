@@ -46,9 +46,7 @@ def list_datasets() -> Generator[PartialDataset, None, None]:
 def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     # parse HTML from request
     resp = make_request(pd.url)
-    root = lxml.html.fromstring(resp.content)
-
-    ld_json = json.loads(root.text_content())
+    ld_json = json.loads(resp.content)
     ld_record = ld_json["result"]
 
     ds = UpstreamDataset(
@@ -142,6 +140,8 @@ def get_file_formats_from_site():
         "/html/body/main/div/div[3]/aside/div[2]/details[7]/ul/li[{}]/div/div[1]/label/div/text()"
     )
     file_formats = []
+    # approx 75 file formats currently listed on site
+    # set range 100 on assumption additions to list are relatively rare
     for i in range(100):
         list_item_raw = tree.xpath(list_item_path.format(i))
         if list_item_raw:
