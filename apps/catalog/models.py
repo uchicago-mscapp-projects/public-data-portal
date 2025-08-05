@@ -13,15 +13,18 @@ class PublisherKind(models.TextChoices):
 # NOTE: keep sorted & in sync with ingestion.data_models
 class FileType(models.TextChoices):
     CSV = "csv", _("Comma-Separated Values")
+    FGDB = "fgdb/gdb", _("File Geodatabase")
     GEOJSON = "geojson", _("GeoJSON")
     JSON = "json", _("JSON Object")
     KML = "kml", _("KML (GeoXML)")
     OTHER = "other", _("Other File Type")
+    OTHER_GEO = "other-geo", _("Other Geo File Type")
     PARQUET = "parquet", _("Parquet Database")
     SHP = "shp", _("Shapefile")
     SQLITE = "sqlite", _("SQLite Database")
     TSV = "tsv", _("Tab-Separated Values")
     XLS = "xls", _("Excel Spreadsheet")
+    XLSX = "xlsx", _("Excel Open XML Spreadsheet")
     XML = "xml", _("XML File")
 
 
