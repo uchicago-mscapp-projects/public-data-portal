@@ -7,7 +7,7 @@
   </a>
 
 {% else %}
-  <button class="button {{ attrs.classes }}">
+  <button class="button {{ attrs.classes }}" {% if attrs.form %}form="{{ attrs.form }}{% endif %}">
   {% slot %}
   {% endslot %}
   </button>

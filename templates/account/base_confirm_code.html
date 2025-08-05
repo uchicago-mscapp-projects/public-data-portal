@@ -17,16 +17,16 @@
     {% element p %}
         {% blocktranslate %}We've sent a code to {{ recipient }}. The code expires shortly, so please enter it soon.{% endblocktranslate %}
     {% endelement %}
-    {% element form form=verify_form method="post" action=action_url  %}
+    {% element form form=form method="post" action=action_url  %}
         {% slot body %}
             {% csrf_token %}
-            {% element fields form=verify_form unlabeled=True %}
+            {% element fields form=form unlabeled=True %}
             {% endelement %}
             {{ redirect_field }}
         {% endslot %}
         {% slot actions %}
             {% element button_group %}
-                {% element button type="submit"  %}
+                {% element button type="submit" classes="is-primary"  %}
                     {% translate "Confirm" %}
                 {% endelement %}
                 {% if can_resend %}
@@ -35,11 +35,11 @@
                     {% endelement %}
                 {% endif %}
                 {% if cancel_url %}
-                    {% element button href=cancel_url  %}
+                    {% element button href=cancel_url classes="is-warning" %}
                         {% translate "Cancel" %}
                     {% endelement %}
                 {% else %}
-                    {% element button type="submit" form="logout-from-stage"  %}
+                    {% element button type="submit" form="logout-from-stage" classes="is-danger" %}
                         {% translate "Cancel" %}
                     {% endelement %}
                 {% endif %}
