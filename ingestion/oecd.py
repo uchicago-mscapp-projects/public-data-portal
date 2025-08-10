@@ -1,18 +1,21 @@
 from typing import Generator
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset, AltStr
-from ingestion.utils import make_request
+from ingestion.utils import make_request, logger
 from urllib.parse import urlparse, parse_qs
 import lxml.html
 import lxml.etree
 import time
 
-INITIAL_URL = "https://aemint-search-client-funcapp-prod.azurewebsites.net/api/faceted-search?siteName=oecd&interfaceLanguage=en&orderBy=mostRelevant&pageSize=10&hiddenFacets=oecd-content-types%3Adata%2Fdatasets&hiddenFacets=oecd-languages%3Aen"
 LIST_URL = "https://aemint-search-client-funcapp-prod.azurewebsites.net/api/faceted-search?siteName=oecd&interfaceLanguage=en&orderBy=mostRelevant&page={}&pageSize=10&hiddenFacets=oecd-content-types%3Adata%2Fdatasets&hiddenFacets=oecd-languages%3Aen"
 DATASET_URL = "https://sdmx.oecd.org/public/rest/dataflow/{}/{}/?references=all"
 DOWNLOAD_URL = "https://sdmx.oecd.org/public/rest/data/{},{},/all?dimensionAtObservation=AllDimensions&format=csvfile"
 SITE_DOMAIN = "https://www.oecd.org/"
 
+headers = {
+    "Accept": "application/xml",  # request XML format
+    "User-Agent": "Mozilla/5.0"   # avoid bot detection
+}
 ns = {
     "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
     "structure": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
@@ -25,7 +28,7 @@ def retrieve_results_count():
     Retrieve total dataset count.
     Useful for iterating through page numbers in list_datasets().
     """
-    resp = make_request(INITIAL_URL).json()
+    resp = make_request(LIST_URL.format(0)).json()
     count = int(resp["total"])
     return count
 
@@ -48,61 +51,64 @@ def list_datasets() -> Generator[PartialDataset, None, None]:
 
 
 def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
-    parsed_url = urlparse(pd.url)
-    url_params = parse_qs(parsed_url.query)
 
-    df_id = url_params.get("df[id]", [None])[0]  # retrieve unique DataSet id from url
-    df_ag = url_params.get("df[ag]", [None])[0]  # retrieve prefix from url
+    try:
+        parsed_url = urlparse(pd.url)
+        url_params = parse_qs(parsed_url.query)
 
-    if None in (df_id, df_ag):
+        df_id = url_params["df[id]"][0]  # retrieve unique DataSet id from url
+        df_ag = url_params["df[ag]"][0]  # retrieve prefix from url
+
+        resp = make_request(DATASET_URL.format(df_ag, df_id), headers=headers)
+        root = lxml.etree.fromstring(resp.content)
+
+        header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
+        name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
+        name_fr = header_elem.xpath('.//common:Name[@xml:lang="fr"]/text()', namespaces=ns)[0]
+
+        desc_html_en_lst = header_elem.xpath(
+            './/common:Description[@xml:lang="en"]/text()', namespaces=ns
+        )
+        desc_html_fr_lst = header_elem.xpath(
+            './/common:Description[@xml:lang="fr"]/text()', namespaces=ns
+        )
+        desc_en = ""
+        desc_fr = ""
+        if len(desc_html_en_lst) > 0:
+            # strip html from description
+            desc_en = lxml.html.fromstring(desc_html_en_lst[0]).text_content().strip()
+        if len(desc_html_fr_lst) > 0:
+            # strip html from description
+            desc_fr = lxml.html.fromstring(desc_html_fr_lst[0]).text_content().strip()
+
+        tags_en = get_dataset_tags(root)
+
+        ds = UpstreamDataset(
+            name=name_en,
+            description=desc_en,
+            upstream_id=df_id,
+            source_url=pd.url,
+            upstream_upload_time=pd.last_updated,
+            license="https://www.oecd.org/en/about/terms-conditions.html",
+            tags=tags_en,
+            publisher_name="OECD",
+            publisher_url=SITE_DOMAIN,
+            publisher_upstream_id=df_id,
+            region_name="International",
+            region_country_code="INT",
+            alternate_names=[AltStr(value=name_fr, lang="fr")],
+            alternate_descriptions=[AltStr(value=desc_fr, lang="fr")],
+        )
+        download_url = DOWNLOAD_URL.format(df_ag, df_id)
+        ds.add_file(download_url, file_type="csv")
+
+        time.sleep(5)  # avoid '429 Too Many Requests'
+
+        return ds
+    
+    except KeyError:
+        logger.warning("missing required query params", url=pd.url)
         return None
-
-    resp = make_request(DATASET_URL.format(df_ag, df_id))
-    root = lxml.etree.fromstring(resp.content)
-
-    header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
-    name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
-    name_fr = header_elem.xpath('.//common:Name[@xml:lang="fr"]/text()', namespaces=ns)[0]
-
-    desc_html_en_lst = header_elem.xpath(
-        './/common:Description[@xml:lang="en"]/text()', namespaces=ns
-    )
-    desc_html_fr_lst = header_elem.xpath(
-        './/common:Description[@xml:lang="fr"]/text()', namespaces=ns
-    )
-    desc_en = ""
-    desc_fr = ""
-    if len(desc_html_en_lst) > 0:
-        # strip html from description
-        desc_en = lxml.html.fromstring(desc_html_en_lst[0]).text_content().strip()
-    if len(desc_html_fr_lst) > 0:
-        # strip html from description
-        desc_fr = lxml.html.fromstring(desc_html_fr_lst[0]).text_content().strip()
-
-    tags_en = get_dataset_tags(root)
-
-    ds = UpstreamDataset(
-        name=name_en,
-        description=desc_en,
-        upstream_id=df_id,
-        source_url=pd.url,
-        upstream_upload_time=pd.last_updated,
-        license="https://www.oecd.org/en/about/terms-conditions.html",
-        tags=tags_en,
-        publisher_name="OECD",
-        publisher_url=SITE_DOMAIN,
-        publisher_upstream_id=df_id,
-        region_name="INT",  # international
-        region_country_code="INT",
-        alternate_names=[AltStr(value=name_fr, lang="fr")],
-        alternate_descriptions=[AltStr(value=desc_fr, lang="fr")],
-    )
-    download_url = DOWNLOAD_URL.format(df_ag, df_id)
-    ds.add_file(download_url, file_type="csv")
-
-    time.sleep(5)  # avoid '429 Too Many Requests'
-
-    return ds
 
 
 def get_dataset_tags(root):
