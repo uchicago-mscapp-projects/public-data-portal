@@ -14,7 +14,7 @@ SITE_DOMAIN = "https://www.oecd.org/"
 
 headers = {
     "Accept": "application/xml",  # request XML format
-    "User-Agent": "Mozilla/5.0"   # avoid bot detection
+    "User-Agent": "Mozilla/5.0",  # avoid bot detection
 }
 ns = {
     "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
@@ -51,7 +51,6 @@ def list_datasets() -> Generator[PartialDataset, None, None]:
 
 
 def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
-
     try:
         parsed_url = urlparse(pd.url)
         url_params = parse_qs(parsed_url.query)
@@ -105,7 +104,7 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         time.sleep(5)  # avoid '429 Too Many Requests'
 
         return ds
-    
+
     except KeyError:
         logger.warning("missing required query params", url=pd.url)
         return None
