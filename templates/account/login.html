@@ -1,10 +1,10 @@
-{% extends "account/base_entrance.html" %}
+{% extends "account/base.html" %}
 {% load i18n %}
 {% load allauth account %}
 {% block head_title %}
     {% trans "Sign In" %}
 {% endblock head_title %}
-{% block content %}
+{% block innercontent %}
     {% element h1 %}
         {% trans "Sign In" %}
     {% endelement %}
@@ -19,7 +19,7 @@
             {% blocktranslate %}If you have not created an account yet, then please {{ link }}sign up{{ end_link }} first.{% endblocktranslate %}
         {% endelement %}
         {% url 'account_login' as login_url %}
-        {% element form form=form method="post" action=login_url tags="entrance,login" %}
+        {% element form form=form method="post" action=login_url %}
             {% slot body %}
                 {% csrf_token %}
                 {% element fields form=form unlabeled=True %}
@@ -27,7 +27,7 @@
                 {{ redirect_field }}
             {% endslot %}
             {% slot actions %}
-                {% element button type="submit" tags="prominent,login" %}
+                {% element button type="submit" classes="is-primary" %}
                     {% trans "Sign In" %}
                 {% endelement %}
             {% endslot %}
@@ -38,21 +38,18 @@
         {% endelement %}
         {% element button_group vertical=True %}
             {% if PASSKEY_LOGIN_ENABLED %}
-                {% element button type="submit" form="mfa_login" id="passkey_login" tags="prominent,login,outline,primary" %}
+                {% element button type="submit" form="mfa_login" id="passkey_login" classes="is-submit" %}
                     {% trans "Sign in with a passkey" %}
                 {% endelement %}
             {% endif %}
-            {% if LOGIN_BY_CODE_ENABLED %}
-                {% element button href=request_login_code_url tags="prominent,login,outline,primary" %}
+            {% if LOGIN_BY_CODE_ENABLED_ZZZZZ %}
+                {% element button href=request_login_code_url classes="is-primary" %}
                     {% trans "Send me a sign-in code" %}
                 {% endelement %}
             {% endif %}
         {% endelement %}
     {% endif %}
-    {% if SOCIALACCOUNT_ENABLED %}
-        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
-    {% endif %}
-{% endblock content %}
+{% endblock innercontent %}
 {% block extra_body %}
     {{ block.super }}
     {% if PASSKEY_LOGIN_ENABLED %}
