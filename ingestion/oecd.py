@@ -94,7 +94,7 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
             publisher_url=SITE_DOMAIN,
             publisher_upstream_id=df_id,
             region_name="International",
-            region_country_code="INT",
+            region_country_code="XX",
             alternate_names=[AltStr(value=name_fr, lang="fr")],
             alternate_descriptions=[AltStr(value=desc_fr, lang="fr")],
         )
