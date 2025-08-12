@@ -58,56 +58,56 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         df_id = url_params["df[id]"][0]  # retrieve unique DataSet id from url
         df_ag = url_params["df[ag]"][0]  # retrieve prefix from url
 
-        resp = make_request(DATASET_URL.format(df_ag, df_id), headers=headers)
-        root = lxml.etree.fromstring(resp.content)
-
-        header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
-        name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
-        name_fr = header_elem.xpath('.//common:Name[@xml:lang="fr"]/text()', namespaces=ns)[0]
-
-        desc_html_en_lst = header_elem.xpath(
-            './/common:Description[@xml:lang="en"]/text()', namespaces=ns
-        )
-        desc_html_fr_lst = header_elem.xpath(
-            './/common:Description[@xml:lang="fr"]/text()', namespaces=ns
-        )
-        desc_en = ""
-        desc_fr = ""
-        if len(desc_html_en_lst) > 0:
-            # strip html from description
-            desc_en = lxml.html.fromstring(desc_html_en_lst[0]).text_content().strip()
-        if len(desc_html_fr_lst) > 0:
-            # strip html from description
-            desc_fr = lxml.html.fromstring(desc_html_fr_lst[0]).text_content().strip()
-
-        tags_en = get_dataset_tags(root)
-
-        ds = UpstreamDataset(
-            name=name_en,
-            description=desc_en,
-            upstream_id=df_id,
-            source_url=pd.url,
-            upstream_upload_time=pd.last_updated,
-            license="https://www.oecd.org/en/about/terms-conditions.html",
-            tags=tags_en,
-            publisher_name="OECD",
-            publisher_url=SITE_DOMAIN,
-            publisher_upstream_id=df_id,
-            region_name="International",
-            region_country_code="XX",
-            alternate_names=[AltStr(value=name_fr, lang="fr")],
-            alternate_descriptions=[AltStr(value=desc_fr, lang="fr")],
-        )
-        download_url = DOWNLOAD_URL.format(df_ag, df_id)
-        ds.add_file(download_url, file_type="csv")
-
-        time.sleep(5)  # avoid '429 Too Many Requests'
-
-        return ds
-
     except KeyError:
         logger.warning("missing required query params", url=pd.url)
         return None
+
+    resp = make_request(DATASET_URL.format(df_ag, df_id), headers=headers)
+    root = lxml.etree.fromstring(resp.content)
+
+    header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
+    name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
+    name_fr = header_elem.xpath('.//common:Name[@xml:lang="fr"]/text()', namespaces=ns)[0]
+
+    desc_html_en_lst = header_elem.xpath(
+        './/common:Description[@xml:lang="en"]/text()', namespaces=ns
+    )
+    desc_html_fr_lst = header_elem.xpath(
+        './/common:Description[@xml:lang="fr"]/text()', namespaces=ns
+    )
+    desc_en = ""
+    desc_fr = ""
+    if len(desc_html_en_lst) > 0:
+        # strip html from description
+        desc_en = lxml.html.fromstring(desc_html_en_lst[0]).text_content().strip()
+    if len(desc_html_fr_lst) > 0:
+        # strip html from description
+        desc_fr = lxml.html.fromstring(desc_html_fr_lst[0]).text_content().strip()
+
+    tags_en = get_dataset_tags(root)
+
+    ds = UpstreamDataset(
+        name=name_en,
+        description=desc_en,
+        upstream_id=df_id,
+        source_url=pd.url,
+        upstream_upload_time=pd.last_updated,
+        license="https://www.oecd.org/en/about/terms-conditions.html",
+        tags=tags_en,
+        publisher_name="OECD",
+        publisher_url=SITE_DOMAIN,
+        publisher_upstream_id=df_id,
+        region_name="International",
+        region_country_code="XX",
+        alternate_names=[AltStr(value=name_fr, lang="fr")],
+        alternate_descriptions=[AltStr(value=desc_fr, lang="fr")],
+    )
+    download_url = DOWNLOAD_URL.format(df_ag, df_id)
+    ds.add_file(download_url, file_type="csv")
+
+    time.sleep(5)  # avoid '429 Too Many Requests'
+
+    return ds
 
 
 def get_dataset_tags(root):
