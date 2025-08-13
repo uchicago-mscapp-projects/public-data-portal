@@ -34,17 +34,19 @@ def extract_updata(catalog):
 
         if license == "See Terms of Use":
             license = "https://www.chicago.gov/city/en/narr/foia/data_disclaimer.html"
-        elif license == "":
-            pass
-        # included this provision in case they ever add a dataset that isn't
-        # the City's terms of use
+        # currently only City's terms or empty field
+
+        tags = ds["classification"].get("domain_category", "")
+
+        #create list w either domain_category or empty list
+        if tags:
+            tags = list(tags)
         else:
-            license == "Other"
+            tags = []
 
-        tags = ds["classification"].get("domain_category", [])
-
+        #extend tags list with domain_tags if available
         if ds["classification"].get("domain_tags", ""):
-            tags = [tags].extend(ds["classification"]["domain_tags"])
+            tags.extend(ds["classification"]["domain_tags"])
 
         uds = UpstreamDataset(
             name=rs["name"],
@@ -80,6 +82,7 @@ def extract_catalog():
     cat = json.loads(resp.text)
     upstream_lst = []
 
+    #keep turning through catalog until it reaches a page with empty results
     while cat["results"]:
         sleep(1)
         updata = extract_updata(cat)
