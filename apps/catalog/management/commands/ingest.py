@@ -5,7 +5,9 @@ import shutil
 import json
 from django_typer.management import Typer
 from ingestion.utils import logger
+from ingestion.data_models import UpstreamDataset
 from catalog.models import DataSet, Publisher, Region
+from pydantic import model_dump_json
 
 app = Typer()
 
@@ -22,11 +24,39 @@ def command(self, name: str):
 
     self.secho(f"Running ingestion.{name}.list_datasets()", fg="blue")
 
+    prep_dir(name)
+
     for pd in list_datasets():
         logger.info("partial dataset", pdata=pd)
         details = get_dataset_details(pd)
         logger.info("details", detail=details)
-        # TODO: this should save the datasets to disk & then import them
+        save_to_json(details, name)
+
+
+def prep_dir(name: str):
+    cwd = os.getcwd()
+    dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+
+    #if directory already exists, empty for overwrite
+    if os.path.exists(dir_path):
+        empty_dir(name)
+        logger.info(f"Existing {name} directory has been emptied.")
+    #otherwise create directory for first scrape data
+    else:
+        os.mkdir(dir_path)
+        logger.info(f"New directory {name} has been created.")
+
+
+def save_to_json(updata: UpstreamDataset, name: str):
+    cwd = os.getcwd()
+    dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+    file_path = os.path_join(dir_path, updata.publisher_upstream_id)
+    json_upd = model_dump_json(updata)
+
+    with open(file_path, "w") as f:
+        json.dump(json_upd, f)
+        logger.info(f"""Dataset {updata.publisher_upstream_id}
+                    saved to {name} directory.""")
 
 
 def empty_dir(name: str):
@@ -105,7 +135,7 @@ def ingest_to_db(name: str):
             )
 
         incoming_ds_ids.add(dataset["upstream_id"])
-    
+
     print("(Would be) Deleted record upstream_ids:")
     for id in list(db_entries_ids - incoming_ds_ids):
         print(id)
