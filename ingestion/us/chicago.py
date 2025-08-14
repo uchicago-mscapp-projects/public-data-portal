@@ -71,7 +71,7 @@ def extract_updata(catalog):
         return upstream_lst
 
 
-def extract_catalog():
+def get_full_datasets():
     """handles catalog pagination to return complete list of datasets"""
     offset = 0
     url = CATALOG.format(str(offset))
