@@ -1,5 +1,6 @@
 from dateutil.parser import parse as parse_date
-from ingestion.data_models import UpstreamDataset
+from ingestion.data_models import UpstreamDataset, PartialDataset
+from ingestion.utils import make_request
 from time import sleep
 import httpx
 import json
@@ -11,14 +12,13 @@ Ingestion script for Socrata-based Chicago data portal.
 # URL below pulls up 100 dataset records at preferred offset
 CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false&limit=100&offset={}&order=page_views_total&published=true&q=&search_context=data.cityofchicago.org&show_unsupported_data_federated_assets=false&tags=&approval_status=approved&audience=public"
 
-
 # to be pulled from new utils
-def make_request(url):
-    """ping the catalog url"""
-    ping = httpx.get(url)
-    ping.raise_for_status()
+# def make_request(url):
+#     """ping the catalog url"""
+#     ping = httpx.get(url)
+#     ping.raise_for_status()
 
-    return ping
+#     return ping
 
 
 def extract_updata(catalog):
@@ -34,17 +34,19 @@ def extract_updata(catalog):
 
         if license == "See Terms of Use":
             license = "https://www.chicago.gov/city/en/narr/foia/data_disclaimer.html"
-        elif license == "":
-            pass
-        # included this provision in case they ever add a dataset that isn't
-        # the City's terms of use
+        # currently only City's terms or empty field
+
+        tags = ds["classification"].get("domain_category", "")
+
+        # create list w either domain_category or empty list
+        if tags:
+            tags = list(tags)
         else:
-            license == "Other"
+            tags = []
 
-        tags = ds["classification"].get("domain_category", [])
-
+        # extend tags list with domain_tags if available
         if ds["classification"].get("domain_tags", ""):
-            tags = [tags].extend(ds["classification"]["domain_tags"])
+            tags.extend(ds["classification"]["domain_tags"])
 
         uds = UpstreamDataset(
             name=rs["name"],
@@ -80,6 +82,7 @@ def get_full_datasets():
     cat = json.loads(resp.text)
     upstream_lst = []
 
+    # keep turning through catalog until it reaches a page with empty results
     while cat["results"]:
         sleep(1)
         updata = extract_updata(cat)

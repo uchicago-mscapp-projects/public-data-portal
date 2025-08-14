@@ -1,5 +1,7 @@
 import importlib
+import structlog
 from django_typer.management import Typer
+from ingestion.utils import logger
 
 app = Typer()
 
@@ -33,5 +35,5 @@ def command(self, name: str):
     self.secho(f"Running ingestion.{name}", fg="blue")
 
     for details in get_full_datasets():
-        print("\t", details)
+        logger.info("details", detail=details)
         # TODO: this should save the datasets to disk & then import them

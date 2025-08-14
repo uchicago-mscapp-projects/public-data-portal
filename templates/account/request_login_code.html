@@ -1,4 +1,4 @@
-{% extends "account/base_entrance.html" %}
+{% extends "account/base.html" %}
 {% load i18n %}
 {% load allauth account %}
 {% block head_title %}
@@ -12,7 +12,7 @@
         {% blocktranslate %}You will receive a special code for a password-free sign-in.{% endblocktranslate %}
     {% endelement %}
     {% url 'account_request_login_code' as login_url %}
-    {% element form form=form method="post" action=login_url tags="entrance,login" %}
+    {% element form form=form method="post" action=login_url  %}
         {% slot body %}
             {% csrf_token %}
             {% element fields form=form unlabeled=True %}
@@ -20,7 +20,7 @@
             {{ redirect_field }}
         {% endslot %}
         {% slot actions %}
-            {% element button type="submit" tags="prominent,login" %}
+            {% element button type="submit" classes="is-primary" %}
                 {% translate "Request Code" %}
             {% endelement %}
         {% endslot %}
