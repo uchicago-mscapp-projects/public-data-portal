@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import DataSet, Publisher
 
 
@@ -45,24 +45,15 @@ def dataset_detail(request, dataset_id):
 
     context = {
         # LATER: get variables from dataset
-        """
-        "dataset_id": dataset_id,
-        "name": ds.name,
-        "description": ds.description,
-        "publisher": ds.publisher,
-        "region": ds.region,
-        "date_created": ds.created_at,
-        "start_date": ds.start_date,
-        "end_date": ds.end_date,
-        "dataset_id": dataset_id,
-        """
+        "ds": get_object_or_404(DataSet, id=dataset_id),
+
         # FOR NOW: strings for testing
         "dataset_id": dataset_id,
-        "name": "name",
-        "description": "description",
-        "publisher": "publisher",
-        "region": "region",
-        "date_created": "created_at",
+        "name": "Some data about something",
+        "description": "Here is a description of the data.",
+        "publisher": "Government of Canada",
+        "region": "CA",
+        "created_at": "created_at",
         "start_date": "start_date",
         "end_date": "end_date",
     }
