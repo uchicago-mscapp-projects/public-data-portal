@@ -11,8 +11,8 @@ from pydantic import model_dump_json
 
 app = Typer()
 
-
 @app.command()
+
 def command(self, name: str):
     try:
         mod = importlib.import_module(f"ingestion.{name}")
@@ -32,10 +32,14 @@ def command(self, name: str):
         logger.info("details", detail=details)
         save_to_json(details, name)
 
-
-def prep_dir(name: str):
+def set_dir_path(name: str):
     cwd = os.getcwd()
     dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+
+    return dir_path
+
+def prep_dir(name: str):
+    dir_path = set_dir_path(name)
 
     #if directory already exists, empty for overwrite
     if os.path.exists(dir_path):
@@ -43,13 +47,12 @@ def prep_dir(name: str):
         logger.info(f"Existing {name} directory has been emptied.")
     #otherwise create directory for first scrape data
     else:
-        os.mkdir(dir_path)
+        os.makedirs(dir_path, exist_ok=True)
         logger.info(f"New directory {name} has been created.")
 
 
 def save_to_json(updata: UpstreamDataset, name: str):
-    cwd = os.getcwd()
-    dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+    dir_path = set_dir_path(name)
     file_path = os.path_join(dir_path, updata.publisher_upstream_id)
     json_upd = model_dump_json(updata)
 
@@ -60,8 +63,7 @@ def save_to_json(updata: UpstreamDataset, name: str):
 
 
 def empty_dir(name: str):
-    cwd = os.getcwd()
-    dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+    dir_path = set_dir_path(name)
 
     for filename in os.listdir(dir_path):
         filepath = os.path.join(dir_path, filename)
