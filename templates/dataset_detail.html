@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% comment %}
+This template is meant as a small demonstration of how we'll
+build out templates & views.
+
+base.html sets up a simple HTML template with Bulma installed.
+
+We'll override the title & content blocks to build our initial index page.
+{% endcomment %}
+
+
+{% block title %}
+  Public Data Portal
+{% endblock %}
+
+{% block content %}
+  {% comment %}
+  At this point don't worry too much about the HTML!
+
+  We'll focus on two things for now, content that we want to group together on the page
+  will go into a <div>, and we can use components & styles from Bulma where we'd like.
+
+  Below we make a few sections, one for displaying a temporary greeting and a second
+  box that will contain the number of datasets.
+  {% endcomment %}
+
+  <div class="title"> {# in HTML id is optional, naming the div for future reference #}
+  <h1>{{ name }}</h1>
+  </div>
+
+  <div class="subtitle">
+  <h2>{{ region }} | {{ publisher }}</h2>
+  </div>
+
+  <div class="block">
+    {{ description }}
+  </div>
+
+{% endblock %}
