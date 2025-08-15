@@ -28,16 +28,19 @@ class FileFormat(str, Enum):
     """
 
     CSV = "csv"
+    FGDB = "fgdb/gdb"
     GEOJSON = "geojson"
     JSON = "json"
     KML = "kml"
     OTHER = "other"
+    OTHER_GEO = "other-geo"
     PARQUET = "parquet"
-    SHAPEFILE = "shp"
+    SHP = "shp"
     SQLITE = "sqlite"
     TSV = "tsv"
     XLS = "xls"
-    XML = "XML"
+    XLSX = "xlsx"
+    XML = "xml"
 
 
 class UpstreamFile(BaseModel):
@@ -99,6 +102,7 @@ class UpstreamDataset(BaseModel):
 
     region_name: str
     region_country_code: str
+    subregion: str | None = ""
 
     source_url: str
     upstream_id: str
