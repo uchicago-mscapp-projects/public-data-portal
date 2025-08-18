@@ -7,8 +7,7 @@ import glob
 from django_typer.management import Typer
 from ingestion.utils import logger
 from ingestion.data_models import UpstreamDataset
-from catalog.models import DataSet, Publisher, PublisherKind, Region
-from pydantic import model_dump_json
+from apps.catalog.models import DataSet, Publisher, PublisherKind, Region
 
 app = Typer()
 
@@ -31,6 +30,9 @@ def command(self, name: str):
         logger.info("partial dataset", pdata=pd)
         details = get_dataset_details(pd)
         logger.info("details", detail=details)
+
+        if details is None:
+            continue
         save_to_json(details, name)
 
 def set_dir_path(name: str):
@@ -54,12 +56,12 @@ def prep_dir(name: str):
 
 def save_to_json(updata: UpstreamDataset, name: str):
     dir_path = set_dir_path(name)
-    file_path = os.path_join(dir_path, updata.publisher_upstream_id)
-    json_upd = model_dump_json(updata)
+    file_path = os.path.join(dir_path, updata.upstream_id)
+    json_upd = updata.model_dump_json()
 
     with open(file_path, "w") as f:
         json.dump(json_upd, f)
-        logger.info(f"""Dataset {updata.publisher_upstream_id}
+        logger.info(f"""Dataset {updata.upstream_id}
                     saved to {name} directory.""")
 
 
