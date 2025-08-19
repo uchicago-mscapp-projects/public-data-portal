@@ -34,6 +34,8 @@ def command(self, name: str):
         if details is None:
             continue
         save_to_json(details, name)
+    
+    #ingest_to_db(name)
 
 def set_dir_path(name: str):
     cwd = os.getcwd()
@@ -56,11 +58,12 @@ def prep_dir(name: str):
 
 def save_to_json(updata: UpstreamDataset, name: str):
     dir_path = set_dir_path(name)
-    file_path = os.path.join(dir_path, updata.upstream_id)
+    file_path = os.path.join(dir_path, f"{updata.upstream_id}.json")
     json_upd = updata.model_dump_json()
+    json_upd_data = json.loads(json_upd)
 
     with open(file_path, "w") as f:
-        json.dump(json_upd, f)
+        json.dump(json_upd_data, f)
         logger.info(f"""Dataset {updata.upstream_id}
                     saved to {name} directory.""")
 
@@ -137,7 +140,7 @@ def ingest_to_db(name: str):
 
 
 def load_incoming_ds(name: str):
-    file_path = f"{set_dir_path(name)}/*.json"
+    file_path = os.path.join(set_dir_path(name), "*.json")
     json_files = glob.glob(file_path)
     incoming_datasets = []
 
