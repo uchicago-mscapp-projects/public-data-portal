@@ -1,0 +1,59 @@
+{% load allauth %}
+
+{% if attrs.type == "hidden" %}
+  <input {% if attrs.required %}required{% endif %}
+         name="{{ attrs.name }}"
+         id="{{ attrs.id }}"
+         {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
+         type="hidden">
+{% else %}
+  <div class="field is-horizontal">
+    <div class="field-label">
+    <label class="label" for="{{ attrs.id}}">{% slot label %}{% endslot %}</label>
+    </div>
+    <div class="field-body">
+    <div class="control">
+
+  {% if attrs.type == "radio" %}
+    TODO: RADIO
+  {% elif attrs.type == "textarea" %}
+        <textarea {% if attrs.required %}required{% endif %}
+                  {% if attrs.rows %}rows="{{ attrs.rows }}"{% endif %}
+                  class="textarea"
+                  name="{{ attrs.name }}"
+                  {% if attrs.readonly %}readonly{% endif %}
+                  id="{{ attrs.id }}"
+                  {% if attrs.disabled %}disabled{% endif %}>{% slot value %}{% endslot %}</textarea>
+  {% elif attrs.type == "select" %}
+        <select id="{{ attrs.id }}" name="{{ attrs.name }}" class="form-select">
+            {% for option in attrs.choices %}
+                <option {% if option.0 == attrs.value %}selected{% endif %}
+                        value="{{ option.0 }}">{{ option.1 }}</option>
+            {% endfor %}
+        </select>
+  {% else %}
+        <input {% if attrs.required %}required{% endif %}
+               name="{{ attrs.name }}"
+               {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}" {% elif attrs.unlabeled %}placeholder="{% slot label %}{% endslot %}"{% endif %}
+               class="{% if attrs.errors %}is-invalid{% endif %} {% if attrs.type == 'checkbox' %}checkbox{% else %}input{% endif %}"
+               id="{{ attrs.id }}"
+               {% if attrs.style %}style="{{ attrs.style }}"{% endif %}
+               {% if attrs.readonly %}readonly{% endif %}
+               {% if attrs.disabled %}disabled{% endif %}
+               {% if attrs.tabindex %}tabindex="{{ attrs.tabindex }}"{% endif %}
+               {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
+               type="{{ attrs.type }}">
+        {% if attrs.errors %}
+            {% for error in attrs.errors %}<div role="alert" class="invalid-feedback">{{ error }}</div>{% endfor %}
+        {% endif %}
+  {% endif %}
+
+  </div>
+  </div>
+  {% if slots.help_text %}
+  <p class="help">
+    {% slot help_text %} {% endslot %}
+  </p>
+  {% endif %}
+</div>
+{% endif %}
