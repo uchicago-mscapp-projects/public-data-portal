@@ -11,7 +11,7 @@ We'll override the title & content blocks to build our initial index page.
 
 
 {% block title %}
-  Public Data Portal
+  Public Data Portal | {{ ds.name }} - {{ ds.publisher }}
 {% endblock %}
 
 {% block content %}
@@ -26,15 +26,15 @@ We'll override the title & content blocks to build our initial index page.
   {% endcomment %}
 
   <div class="title"> {# in HTML id is optional, naming the div for future reference #}
-  <h1>{{ name }}</h1>
+  <h1>{{ ds.name }}</h1>
   </div>
 
   <div class="subtitle">
-  <h2>{{ region }} | {{ publisher }}</h2>
+  <h2>{{ ds.region }} | {{ ds.publisher }}</h2>
   </div>
 
   <div class="block">
-    {{ description }}
+    {{ ds.description }}
   </div>
 
 {% endblock %}
