@@ -45,6 +45,7 @@ class Publisher(models.Model):
     name = models.TextField()
     kind = models.CharField(max_length=2, choices=PublisherKind)
     url = models.URLField()
+    mirror = models.BooleanField()
 
     def __str__(self):
         return f"{self.name} - {self.kind}"
@@ -125,6 +126,7 @@ class DataSet(models.Model):
         CuratedCollection, null=True, blank=True, related_name="datasets"
     )
     quality_score = models.IntegerField()
+    last_mirrored = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
