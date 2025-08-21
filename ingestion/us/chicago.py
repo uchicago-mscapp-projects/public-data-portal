@@ -67,12 +67,12 @@ def extract_updata(catalog):
             license=license,
             tags=tags,
         )
-        #check if odata link exists
+        # check if odata link exists
         odata = ODATA_URL.format(uds.upstream_id)
         resp = httpx.get(odata)
         if resp.status_code == 200:
             download_url = odata
-        #otherwise just link to portal page
+        # otherwise just link to portal page
         else:
             download_url = ds["link"]
         uds.add_file(url=download_url, file_type="csv")
@@ -91,13 +91,13 @@ def extract_catalog():
     n_results = cat["resultSetSize"]
     upstream_lst = []
 
-    #starts with offset zero
+    # starts with offset zero
     for offset in range(100, n_results, 100):
         sleep(1)
         updata = extract_updata(cat)
         upstream_lst.extend(updata)
 
-        #loads new page from offset
+        # loads new page from offset
         url = CATALOG.format(str(offset))
         resp = make_request(url)
         cat = json.loads(resp.text)
