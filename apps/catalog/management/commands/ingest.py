@@ -69,12 +69,8 @@ def save_to_json(updata: UpstreamDataset, name: str):
 
 
 def empty_dir(name: str):
-<<<<<<< HEAD
     if name == "" or ".." in name:
-        raise ValueError("Invalid scraper name.")
-=======
-    assert name != "" and name != "..", "Invalid directory: potentially unsafe filepath"
->>>>>>> 918d3524adbc1d029f9e23e3060b09625320d8e0
+        raise ValueError("Invalid Directory: Potentially Unsafe Filepath")
 
     dir_path = set_dir_path(name)
 
