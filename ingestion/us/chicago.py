@@ -11,6 +11,7 @@ Ingestion script for Socrata-based Chicago data portal.
 
 # URL below pulls up 100 dataset records at preferred offset
 CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false&limit=100&offset={}&order=page_views_total&published=true&q=&search_context=data.cityofchicago.org&show_unsupported_data_federated_assets=false&tags=&approval_status=approved&audience=public"
+ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
 
 # to be pulled from new utils
 # def make_request(url):
@@ -64,10 +65,17 @@ def extract_updata(catalog):
             source_url=ds["permalink"],
             upstream_id=rs["id"],
             license=license,
-            ##Authorization issues with various links
-            # files= list[UpstreamFile] = Field(default_factory=list),
             tags=tags,
         )
+        #check if odata link exists
+        odata = ODATA_URL.format(uds.upstream_id)
+        resp = httpx.get(odata)
+        if resp.status_code == 200:
+            download_url = odata
+        #otherwise just link to portal page
+        else:
+            download_url = ds["link"]
+        uds.add_file(url=download_url, file_type="csv")
         upstream_lst.append(uds)
 
         return upstream_lst
@@ -80,16 +88,17 @@ def extract_catalog():
     resp = make_request(url)
 
     cat = json.loads(resp.text)
+    n_results = cat["resultSetSize"]
     upstream_lst = []
 
-    # keep turning through catalog until it reaches a page with empty results
-    while cat["results"]:
+    #starts with offset zero
+    for offset in range(100, n_results, 100):
         sleep(1)
         updata = extract_updata(cat)
         upstream_lst.extend(updata)
 
-        # next page
-        url = CATALOG.format(str(offset + 100))
+        #loads new page from offset
+        url = CATALOG.format(str(offset))
         resp = make_request(url)
         cat = json.loads(resp.text)
 
