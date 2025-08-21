@@ -63,6 +63,9 @@ def save_to_json(updata: UpstreamDataset, name: str):
 
 
 def empty_dir(name: str):
+    if name == "" or ".." in name:
+        raise ValueError("Invalid scraper name.")
+
     dir_path = set_dir_path(name)
 
     for filename in os.listdir(dir_path):
