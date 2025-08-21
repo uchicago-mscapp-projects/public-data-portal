@@ -13,29 +13,36 @@ app = Typer()
 
 @app.command()
 
-def command(self, name: str):
-    try:
-        mod = importlib.import_module(f"ingestion.{name}")
-        list_datasets = mod.list_datasets
-        get_dataset_details = mod.get_dataset_details
-    except (ImportError, AttributeError) as e:
-        self.secho(f"Could not import: {e}", fg="red")
-        return
+def command(self, name: str, clearcary: bool, ingestonly: bool):
+    # if clearcary:
+    #     clear_carync()
 
-    self.secho(f"Running ingestion.{name}.list_datasets()", fg="blue")
+    if not ingestonly:
+        try:
+            mod = importlib.import_module(f"ingestion.{name}")
+            list_datasets = mod.list_datasets
+            get_dataset_details = mod.get_dataset_details
+        except (ImportError, AttributeError) as e:
+            self.secho(f"Could not import: {e}", fg="red")
+            return
 
-    prep_dir(name)
+        self.secho(f"Running ingestion.{name}.list_datasets()", fg="blue")
 
-    for pd in list_datasets():
-        logger.info("partial dataset", pdata=pd)
-        details = get_dataset_details(pd)
-        logger.info("details", detail=details)
+        prep_dir(name)
 
-        if details is None:
-            continue
-        save_to_json(details, name)
-    
+        for pd in list_datasets():
+            logger.info("partial dataset", pdata=pd)
+            details = get_dataset_details(pd)
+            logger.info("details", detail=details)
+
+            if details is None:
+                continue
+            save_to_json(details, name)
+
     #ingest_to_db(name)
+
+# def clear_carync():
+#     '''resets carync for development testing'''
 
 def set_dir_path(name: str):
     cwd = os.getcwd()
@@ -104,7 +111,7 @@ def ingest_to_db(name: str):
                     "url": dataset["publisher_url"]
                 }
             )
-        
+
         # for each iter, retrieve/create corresponding region obj for dataset in db
         region, _ = Region.objects.get_or_create(
             country_code=dataset["region_country_code"],
