@@ -30,6 +30,7 @@ class DataSetAdmin(admin.ModelAdmin):
         ("created_at", "updated_at"),
         ("source_url", "upstream_id", "upstream_upload_time"),
     ]
+    readonly_fields = ("created_at", "updated_at")
     inlines = [
         DataSetFileInline,
     ]
