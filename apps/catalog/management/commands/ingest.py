@@ -13,12 +13,12 @@ app = Typer()
 
 
 @app.command()
-def command(self, name: str, clearcary: bool, ingestonly: bool):
-    if clearcary:
-        # not sure if this should be "us/cary_nc" or "us.cary_nc"
-        if name != "us.cary_nc":
-            raise ValueError("clearcary flag is to only be used with us/cary_nc scraper")
-        clear_carync()
+def command(self, name: str, cleardb: bool, ingestonly: bool):
+    if cleardb:
+        # not sure if name will come through as "us/scraper" or "us.scraper"
+        # if name != "us.cary_nc":
+        #     raise ValueError("clearcary flag is to only be used with us/cary_nc scraper")
+        clear_db(name)
 
     if not ingestonly:
         try:
@@ -45,26 +45,26 @@ def command(self, name: str, clearcary: bool, ingestonly: bool):
     # ingest_to_db(name)
 
 
-def clear_carync():
+def clear_db(name: str):
     """resets cary_nc for development testing"""
     # empty out directory, deletes all the json
-    empty_dir("us.cary_nc")
+    empty_dir(name)
     # delete the leftover, empty directory
-    dir_path = set_dir_path("us.cary_nc")
+    dir_path = set_dir_path(name)
     os.rmdir(dir_path)
-    logger.info("Existing Cary NC json and directory have been deleted.")
+    logger.info(f"Existing {name} json and directory have been deleted.")
 
     # clear carync datasets from db
-    p = Publisher.objects.get(name="Town of Cary")
+    p = Publisher.objects.get(name=name)
     ## actual code to run
     # DataSet.objects.filter(publisher=p).delete() #delete datasets
     # p.delete() #delete publisher
-    # logger.info("Cary NC scraper has been removed from the database.")
+    # logger.info(f"{name} scraper has been removed from the database.")
 
     # shows ids of datasets that would be deleted
     cary_dsets = DataSet.objects.filter(publisher=p)
     to_delete_ids = set(cary_dsets.values_list("upstream_id", flat=True))
-    print("Cary NC datasets to be removed from database:")
+    print(f"{name} datasets to be removed from database:")
     for id in list(to_delete_ids):
         print(id)
 
