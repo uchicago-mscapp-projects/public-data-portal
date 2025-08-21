@@ -11,16 +11,8 @@ Ingestion script for Socrata-based Chicago data portal.
 
 # URL below pulls up 100 dataset records at preferred offset
 CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false&limit=100&offset={}&order=page_views_total&published=true&q=&search_context=data.cityofchicago.org&show_unsupported_data_federated_assets=false&tags=&approval_status=approved&audience=public"
+# url for "download" purposes
 ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
-
-# to be pulled from new utils
-# def make_request(url):
-#     """ping the catalog url"""
-#     ping = httpx.get(url)
-#     ping.raise_for_status()
-
-#     return ping
-
 
 def extract_updata(catalog):
     """takes catalog page of 100 datasets, returns list of upstream datasets"""
@@ -91,7 +83,7 @@ def get_full_datasets():
     n_results = cat["resultSetSize"]
     upstream_lst = []
 
-    # starts with offset zero
+    # starts with offset zero, so loop iterates through *next* offsets
     for offset in range(100, n_results, 100):
         sleep(1)
         updata = extract_updata(cat)
