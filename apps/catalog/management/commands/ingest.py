@@ -14,8 +14,11 @@ app = Typer()
 @app.command()
 
 def command(self, name: str, clearcary: bool, ingestonly: bool):
-    # if clearcary:
-    #     clear_carync()
+    if clearcary:
+        #not sure if this should be "us/cary_nc" or "us.cary_nc"
+        if name != "us.cary_nc":
+            raise ValueError("clearcary flag is to only be used with us/cary_nc scraper")
+        clear_carync()
 
     if not ingestonly:
         try:
@@ -41,8 +44,24 @@ def command(self, name: str, clearcary: bool, ingestonly: bool):
 
     #ingest_to_db(name)
 
-# def clear_carync():
-#     '''resets carync for development testing'''
+def clear_carync():
+    '''resets carync for development testing'''
+    #empty out json
+    empty_dir("carync")
+
+    #clear carync datasets from db
+    p = Publisher.objects.get(name="Town of Cary")
+    ## actual code to run
+    # DataSet.objects.filter(publisher=p).delete() #delete datasets
+    # p.delete() #delete publisher
+    # logger.info("Cary NC scraper data has been reset.")
+
+    #shows ids of datasets that would be deleted
+    cary_dsets = DataSet.objects.filter(publisher=p)
+    to_delete_ids = set(cary_dsets.values_list("upstream_id", flat=True))
+    print("Cary NC datasets to be removed from database:")
+    for id in list(to_delete_ids):
+        print(id)
 
 def set_dir_path(name: str):
     cwd = os.getcwd()
@@ -96,10 +115,10 @@ def ingest_to_db(name: str):
 
     for i, dataset in enumerate(incoming_datasets):
 
-        # only run on first iteration 
+        # only run on first iteration
         if i == 0:
 
-            # load in existing db entries for publisher into flattened set 
+            # load in existing db entries for publisher into flattened set
             db_entries = DataSet.objects.filter(publisher=dataset["publisher_name"])
             db_entries_ids = set(db_entries.values_list("upstream_id", flat=True))
 
@@ -156,7 +175,6 @@ def load_incoming_ds(name: str):
         with open(json_file, "r") as f:
             incoming_json = json.load(f)
             incoming_datasets.append(incoming_json)
-    
+
     return incoming_datasets
 
-    
