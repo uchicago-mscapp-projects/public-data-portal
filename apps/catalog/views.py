@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from .models import DataSet, Publisher
+from .models import DataSet, Publisher, DataSetFile
 
 
 def index(request):
@@ -37,16 +37,14 @@ def index(request):
     return render(request, "index.html", context)
 
 
-
 def dataset_detail(request, dataset_id):
-
     # TO DO: handle case when dataset id not found
-    #ds = DataSet.objects.get(id=dataset_id)
+    # ds = DataSet.objects.get(id=dataset_id)
 
     context = {
         # LATER: get variables from dataset
         "ds": get_object_or_404(DataSet, id=dataset_id),
-
+        "files": DataSetFile.objects.filter(dataset__id=dataset_id),
         # FOR NOW: strings for testing
         "dataset_id": dataset_id,
         "name": "Some data about something",
@@ -63,7 +61,7 @@ def dataset_detail(request, dataset_id):
     # parameters
 
     # TO DO: implement tabs to show collections / UGC with query strings
-    #context["name"] = request.GET.get("name", "anonymous user")
+    # context["name"] = request.GET.get("name", "anonymous user")
 
     # Aside: Any time you see code taking untrusted user input be suspicious!
     #  In older web frameworks, the code here would lead to a vulnerability

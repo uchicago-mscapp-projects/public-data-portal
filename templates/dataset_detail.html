@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 
 {% comment %}
-This template is meant as a small demonstration of how we'll
-build out templates & views.
+Dataset detail view; in progress
 
-base.html sets up a simple HTML template with Bulma installed.
-
-We'll override the title & content blocks to build our initial index page.
 {% endcomment %}
 
 
@@ -36,5 +32,27 @@ We'll override the title & content blocks to build our initial index page.
   <div class="block">
     {{ ds.description }}
   </div>
+
+  <div class="dropdown is-active">
+  <div class="dropdown-trigger">
+    <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+      <span>Download</span>
+      <span class="icon is-small">
+        <i class="fas fa-angle-down" aria-hidden="true"></i>
+      </span>
+    </button>
+  </div>
+  <div class="dropdown-menu" id="dropdown-menu" role="menu">
+    <div class="dropdown-content">
+      <a href="#" class="dropdown-item"> Dropdown item </a>
+      <a class="dropdown-item"> Other dropdown item </a>
+      <a href="#" class="dropdown-item is-active"> Active dropdown item </a>
+      <a href="#" class="dropdown-item"> Other dropdown item </a>
+      {% for file in files %}
+        <a href="{{ file.url }}" class="dropdown-item"> {{ file.file_type }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 
 {% endblock %}

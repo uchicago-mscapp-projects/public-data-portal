@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('catalog', '0012_alter_datasetfile_file_type'),
+        ("catalog", "0012_alter_datasetfile_file_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dataset',
-            name='quality_score',
+            model_name="dataset",
+            name="quality_score",
             field=models.IntegerField(blank=True),
         ),
     ]
