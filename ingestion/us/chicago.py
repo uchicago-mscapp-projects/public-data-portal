@@ -14,6 +14,7 @@ CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false
 # url for "download" purposes
 ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
 
+
 def extract_updata(catalog):
     """takes catalog page of 100 datasets, returns list of upstream datasets"""
     upstream_lst = []
