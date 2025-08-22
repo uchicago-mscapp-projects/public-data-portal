@@ -7,7 +7,7 @@ import glob
 from django_typer.management import Typer
 from ingestion.utils import logger
 from ingestion.data_models import UpstreamDataset
-from apps.catalog.models import DataSet, Publisher, PublisherKind, Region
+from apps.catalog.models import DataSet, Publisher, PublisherKind, Region, DataSetFile
 
 app = Typer()
 
@@ -42,7 +42,7 @@ def command(self, name: str, cleardb: bool, ingestonly: bool):
                 continue
             save_to_json(details, name)
 
-    # ingest_to_db(name)
+    ingest_to_db(name)
 
 
 def clear_db(name: str):
@@ -123,18 +123,18 @@ def ingest_to_db(name: str):
     for i, dataset in enumerate(incoming_datasets):
         # only run on first iteration
         if i == 0:
-            # load in existing db entries for publisher into flattened set
-            db_entries = DataSet.objects.filter(publisher=dataset["publisher_name"])
-            db_entries_ids = set(db_entries.values_list("upstream_id", flat=True))
-
             # retrieve/create corresponding publisher obj for dataset in db
             publisher, _ = Publisher.objects.get_or_create(
                 name=dataset["publisher_name"],
                 defaults={
-                    "kind": PublisherKind.GOV_NATIONAL,  # will need to revisit this, figure out how we will set
+                    "kind": PublisherKind.GOV_NATIONAL,  # will need to revisit this
                     "url": dataset["publisher_url"],
                 },
             )
+
+            # load in existing db entries for publisher into flattened set
+            db_entries = DataSet.objects.filter(publisher=publisher)
+            db_entries_ids = set(db_entries.values_list("upstream_id", flat=True))
 
         # for each iter, retrieve/create corresponding region obj for dataset in db
         region, _ = Region.objects.get_or_create(
@@ -155,11 +155,22 @@ def ingest_to_db(name: str):
             "quality_score": 0,
         }
 
-        _, _ = DataSet.objects.update_or_create(
+        ds_obj, _ = DataSet.objects.update_or_create(
             publisher__name=dataset["publisher_name"],
             upstream_id=dataset["upstream_id"],
             defaults=ds_values,
         )
+
+        for file_json in dataset["files"]:
+            ds_file, _ = DataSetFile.objects.get_or_create(
+                original_url=file_json["url"],
+                defaults={
+                    "dataset": ds_obj,
+                    "url": file_json["url"],
+                    "file_type": file_json["file_type"],
+                    "file_size_mb": file_json["file_size_mb"],
+                },
+            )
 
         incoming_ds_ids.add(dataset["upstream_id"])
 
