@@ -60,7 +60,7 @@ def extract_updata(catalog):
             license=license,
             tags=tags,
         )
-        # check if odata link exists
+        # check if odata link exists, use for download
         odata = ODATA_URL.format(uds.upstream_id)
         resp = httpx.get(odata)
         if resp.status_code == 200:
@@ -84,7 +84,7 @@ def get_full_datasets():
     n_results = cat["resultSetSize"]
     upstream_lst = []
 
-    # starts with offset zero, so loop iterates through *next* offsets
+    # first json used offset zero, so loop iterates through *next* offsets
     for offset in range(100, n_results, 100):
         sleep(1)
         updata = extract_updata(cat)
