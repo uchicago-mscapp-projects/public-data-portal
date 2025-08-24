@@ -4,23 +4,20 @@ import os
 import shutil
 import json
 import glob
-#from time import sleep
 from django_typer.management import Typer
 from ingestion.utils import logger
 from ingestion.data_models import UpstreamDataset
 from apps.catalog.models import DataSet, Publisher, PublisherKind, Region, DataSetFile
 
-
-PUB_SCR_CROSS = {
-    "us.cary_nc":"Town of Cary",
-    "oecd":"OECD"
-}
-
 app = Typer()
+
 
 @app.command()
 def command(self, name: str, cleardb: bool, ingestonly: bool):
     if cleardb:
+        # not sure if name will come through as "us/scraper" or "us.scraper"
+        # if name != "us.cary_nc":
+        #     raise ValueError("clearcary flag is to only be used with us/cary_nc scraper")
         clear_db(name)
 
     if not ingestonly:
@@ -36,40 +33,40 @@ def command(self, name: str, cleardb: bool, ingestonly: bool):
 
         prep_dir(name)
 
-        count = 0
         for pd in list_datasets():
-            if count < 10:
-                logger.info("partial dataset", pdata=pd)
-                details = get_dataset_details(pd)
-                logger.info("details", detail=details)
+            logger.info("partial dataset", pdata=pd)
+            details = get_dataset_details(pd)
+            logger.info("details", detail=details)
 
-                if details is None:
-                    continue
-                save_to_json(details, name)
-                count += 1
-            else:
-                break
+            if details is None:
+                continue
+            save_to_json(details, name)
 
     ingest_to_db(name)
 
 
 def clear_db(name: str):
-    """resets db for specified scraper for development testing"""
-    # map internal scraper name to external publisher name
-    pubname = PUB_SCR_CROSS[name]
-    if Publisher.objects.filter(name=pubname).exists():
-        p = Publisher.objects.get(name=pubname)
-    else:
-        return
-    # if scraper dsets exist, delete them
-    DataSet.objects.filter(publisher_id=p.id).delete() #delete datasets
-    p.delete() #delete publisher
-    logger.info(f"{name} scraper has been removed from the database.")
-    #sleep(10)
+    """resets cary_nc for development testing"""
+    # empty out directory, deletes all the json
+    empty_dir(name)
+    # delete the leftover, empty directory
+    dir_path = set_dir_path(name)
+    os.rmdir(dir_path)
+    logger.info(f"Existing {name} json and directory have been deleted.")
 
-    # cary_dsets = DataSet.objects.filter(publisher_id=p)
-    # to_delete_ids = set(cary_dsets.values_list("upstream_id", flat=True))
-    # print(f"{name} datasets to be removed from database: {len(to_delete_ids)}")
+    # clear carync datasets from db
+    p = Publisher.objects.get(name=name)
+    ## actual code to run
+    # DataSet.objects.filter(publisher=p).delete() #delete datasets
+    # p.delete() #delete publisher
+    # logger.info(f"{name} scraper has been removed from the database.")
+
+    # shows ids of datasets that would be deleted
+    cary_dsets = DataSet.objects.filter(publisher=p)
+    to_delete_ids = set(cary_dsets.values_list("upstream_id", flat=True))
+    print(f"{name} datasets to be removed from database:")
+    for id in list(to_delete_ids):
+        print(id)
 
 
 def set_dir_path(name: str):
