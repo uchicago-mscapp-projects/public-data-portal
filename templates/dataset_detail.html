@@ -11,15 +11,6 @@ Dataset detail view; in progress
 {% endblock %}
 
 {% block content %}
-  {% comment %}
-  At this point don't worry too much about the HTML!
-
-  We'll focus on two things for now, content that we want to group together on the page
-  will go into a <div>, and we can use components & styles from Bulma where we'd like.
-
-  Below we make a few sections, one for displaying a temporary greeting and a second
-  box that will contain the number of datasets.
-  {% endcomment %}
 
   <div class="title"> {# in HTML id is optional, naming the div for future reference #}
   <h1>{{ ds.name }}</h1>
@@ -29,30 +20,104 @@ Dataset detail view; in progress
   <h2>{{ ds.region }} | {{ ds.publisher }}</h2>
   </div>
 
+  {% if ds.temporal_collection %}
+  <div class="box" id="temporal-collection">
+    <p>This dataset is part of the <a href="#">{{ ds.temporal_collection}}</a> collection.</p>
+  </div>
+  {% endif %}
+
   <div class="block">
-    {{ ds.description }}
+    <div class="dropdown is-hoverable">
+      <div class="dropdown-trigger">
+        <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+          <span>Download</span>
+          <span class="icon is-small">
+            <i class="fas fa-angle-down" aria-hidden="true"></i>
+          </span>
+        </button>
+      </div>
+      <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+          {% for file in files %}
+            <a href="{{ file.url }}" target="_blank" class="dropdown-item"> {{ file.file_type }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="dropdown is-active">
-  <div class="dropdown-trigger">
-    <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-      <span>Download</span>
-      <span class="icon is-small">
-        <i class="fas fa-angle-down" aria-hidden="true"></i>
-      </span>
-    </button>
+  <div class="block" id="quality-score">
+    <p>Quality Score: {{ ds.quality_score }}</p>
   </div>
-  <div class="dropdown-menu" id="dropdown-menu" role="menu">
-    <div class="dropdown-content">
-      <a href="#" class="dropdown-item"> Dropdown item </a>
-      <a class="dropdown-item"> Other dropdown item </a>
-      <a href="#" class="dropdown-item is-active"> Active dropdown item </a>
-      <a href="#" class="dropdown-item"> Other dropdown item </a>
-      {% for file in files %}
-        <a href="{{ file.url }}" class="dropdown-item"> {{ file.file_type }}</a>
+
+<div>
+  <div class="tabs is-boxed">
+    <ul>
+      {% for tab in tabs %}
+        <li data-tab="{{ tab.id }}" class="{% if forloop.first %}is-active{% endif %}">
+          <a>{{ tab.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div id="tab-content">
+    <div class="tab-pane is-active" id="details">
+      <div class="block">
+        <p><strong>Publisher</strong>: {{ ds.publisher }}</p>
+        <p><strong>Region</strong>: {{ ds.region }}</p>
+      </div>
+      <div class="block">
+        <p>{{ ds.description }}</p>
+      </div>
+    </div>
+    <div class="tab-pane" id="metadata">
+      <p>Created: {{ ds.created_at }}</p>
+      <p>Updated: {{ ds.updated_at }}</p>
+    </div>
+    <div class="tab-pane" id="comments">
+      <p>Comments and other UGC can go here?</p>
+    </div>
+    <div class="tab-pane" id="collections">
+      {% if ds.temporal_collection %}
+        <div class="button is-info"><a href="#">{{ ds.temporal_collection }}</a></div>
+      {% endif %}
+      {% for collection in collections %}
+        <div class="button"><a href="#">{{ collection.name }}</a></div>
       {% endfor %}
     </div>
   </div>
 </div>
+
+<style>
+  .tab-pane {
+    display: none;
+  }
+  .tab-pane.is-active {
+    display: block;
+  }
+  a { color: inherit; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tabs = document.querySelectorAll(".tabs ul li");
+  const panes = document.querySelectorAll(".tab-pane");
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.tab;
+
+      // remove is-active from all tabs and panes
+      tabs.forEach(t => t.classList.remove("is-active"));
+      panes.forEach(p => p.classList.remove("is-active"));
+
+      // add is-active to the clicked tab and its pane
+      tab.classList.add("is-active");
+      document.getElementById(target).classList.add("is-active");
+    });
+  });
+});
+</script>
 
 {% endblock %}

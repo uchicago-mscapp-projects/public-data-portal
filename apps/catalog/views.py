@@ -38,22 +38,21 @@ def index(request):
 
 
 def dataset_detail(request, dataset_id):
-    # TO DO: handle case when dataset id not found
-    # ds = DataSet.objects.get(id=dataset_id)
+    ds = get_object_or_404(DataSet, id=dataset_id)
+
+    tabs = [
+        {"id": "details", "title": "Details"},
+        {"id": "metadata", "title": "Metadata"},
+        {"id": "comments", "title": "Comments"},
+        {"id": "collections", "title": "Collections"},
+    ]
 
     context = {
         # LATER: get variables from dataset
-        "ds": get_object_or_404(DataSet, id=dataset_id),
+        "ds": ds,
         "files": DataSetFile.objects.filter(dataset__id=dataset_id),
-        # FOR NOW: strings for testing
-        "dataset_id": dataset_id,
-        "name": "Some data about something",
-        "description": "Here is a description of the data.",
-        "publisher": "Government of Canada",
-        "region": "CA",
-        "created_at": "created_at",
-        "start_date": "start_date",
-        "end_date": "end_date",
+        "collections": [collection for collection in ds.curated_collections.all()],
+        "tabs": tabs,
     }
 
     # just to demonstrate, here is how you would obtain a parameter from the

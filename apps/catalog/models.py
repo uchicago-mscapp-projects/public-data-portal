@@ -102,8 +102,8 @@ class DataSet(models.Model):
     description = models.TextField(blank=True)
 
     # define the time range covered by the data (if known)
-    start_date = models.DateField(null=True)
-    end_date = models.DateField(null=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
 
     upstream_upload_time = models.DateTimeField()
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT)
