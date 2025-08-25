@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     Publisher,
+    Region,
     DataSet,
     DataSetFile,
     IdentifierKind,
@@ -20,6 +21,13 @@ admin.site.register(Publisher, PublisherAdmin)
 
 class DataSetFileInline(admin.TabularInline):
     model = DataSetFile
+
+
+class RegionAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Region, RegionAdmin)
 
 
 class DataSetAdmin(admin.ModelAdmin):

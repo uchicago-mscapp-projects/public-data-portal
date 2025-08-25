@@ -124,7 +124,7 @@ class DataSet(models.Model):
     curated_collections = models.ManyToManyField(
         CuratedCollection, null=True, blank=True, related_name="datasets"
     )
-    quality_score = models.IntegerField()
+    quality_score = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

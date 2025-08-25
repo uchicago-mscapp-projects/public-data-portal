@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% comment %}
+Dataset detail view; in progress
+
+{% endcomment %}
+
+
+{% block title %}
+  Public Data Portal | {{ ds.name }} - {{ ds.publisher }}
+{% endblock %}
+
+{% block content %}
+  {% comment %}
+  At this point don't worry too much about the HTML!
+
+  We'll focus on two things for now, content that we want to group together on the page
+  will go into a <div>, and we can use components & styles from Bulma where we'd like.
+
+  Below we make a few sections, one for displaying a temporary greeting and a second
+  box that will contain the number of datasets.
+  {% endcomment %}
+
+  <div class="title"> {# in HTML id is optional, naming the div for future reference #}
+  <h1>{{ ds.name }}</h1>
+  </div>
+
+  <div class="subtitle">
+  <h2>{{ ds.region }} | {{ ds.publisher }}</h2>
+  </div>
+
+  <div class="block">
+    {{ ds.description }}
+  </div>
+
+  <div class="dropdown is-active">
+  <div class="dropdown-trigger">
+    <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+      <span>Download</span>
+      <span class="icon is-small">
+        <i class="fas fa-angle-down" aria-hidden="true"></i>
+      </span>
+    </button>
+  </div>
+  <div class="dropdown-menu" id="dropdown-menu" role="menu">
+    <div class="dropdown-content">
+      <a href="#" class="dropdown-item"> Dropdown item </a>
+      <a class="dropdown-item"> Other dropdown item </a>
+      <a href="#" class="dropdown-item is-active"> Active dropdown item </a>
+      <a href="#" class="dropdown-item"> Other dropdown item </a>
+      {% for file in files %}
+        <a href="{{ file.url }}" class="dropdown-item"> {{ file.file_type }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
