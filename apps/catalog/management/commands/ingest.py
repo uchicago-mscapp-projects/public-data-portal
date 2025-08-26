@@ -4,14 +4,11 @@ import os
 import shutil
 import json
 import glob
-
-# from time import sleep
 from django_typer.management import Typer
 from ingestion.utils import logger
 from ingestion.data_models import UpstreamDataset
 from apps.catalog.models import DataSet, Publisher, PublisherKind, Region, DataSetFile
 
-PUB_SCR_CROSS = {"us.cary_nc": "Town of Cary", "oecd": "OECD"}
 
 app = Typer()
 
@@ -48,22 +45,10 @@ def command(self, name: str, cleardb: bool, ingestonly: bool):
 
 def clear_db(name: str):
     """resets db for specified scraper for development testing"""
-    # map internal scraper name to external publisher name
-    pubname = PUB_SCR_CROSS[name]
-    if Publisher.objects.filter(name=pubname).exists():
-        p = Publisher.objects.get(name=pubname)
-    else:
-        return
     # if scraper dsets exist, delete them
-    DataSet.objects.filter(publisher_id=p.id).delete()  # delete datasets
-    p.delete()  # delete publisher
-    logger.info(f"{name} scraper has been removed from the database.")
-    # sleep(10)
-
-    # cary_dsets = DataSet.objects.filter(publisher_id=p)
-    # to_delete_ids = set(cary_dsets.values_list("upstream_id", flat=True))
-    # print(f"{name} datasets to be removed from database: {len(to_delete_ids)}")
-
+    if DataSet.objects.filter(scraper=name).exists():
+        DataSet.objects.filter(scraper=name).delete()
+        logger.info(f"{name} datasets has been removed from the database.")
 
 def set_dir_path(name: str):
     cwd = os.getcwd()
@@ -149,6 +134,7 @@ def ingest_to_db(name: str):
             "upstream_id": dataset["upstream_id"],
             "license": dataset["license"],
             "quality_score": 0,
+            "scraper":name,
         }
 
         ds_obj, _ = DataSet.objects.update_or_create(
