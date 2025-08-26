@@ -190,3 +190,35 @@ class Crosswalk(models.Model):
 
 
 # class GeoProjection(?)
+
+"""
+TO DO: data models for ingestion
+"""
+
+class IngestionRunStatus(models.TextChoices):
+    SUCCESS = "s", _("Success")
+    FAILURE = "f", _("Import failed - not imported")
+
+
+class IngestionRecord(models.Model):
+    """
+    Record of ingest.py run. 
+    """
+
+    run_start = models.DateTimeField(auto_now_add=True)
+    run_finish = models.DateTimeField()
+
+    # fields from command call
+    ingest_only = models.BooleanField()
+    cleardb = models.BooleanField()
+
+    # name of scraper
+    scraper = models.CharField(max_length=100)
+    status = models.CharField(max_length=10, choices=IngestionRunStatus)
+
+    # stats on ingestion:
+    existing_datasets = models.IntegerField(default=0)
+    incoming_datasets = models.IntegerField(default=0)
+    datasets_created = models.IntegerField(default=0)
+    datasets_deleted = models.IntegerField(default=0)
+
