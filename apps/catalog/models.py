@@ -197,7 +197,8 @@ TO DO: data models for ingestion
 
 class IngestionRunStatus(models.TextChoices):
     SUCCESS = "s", _("Success")
-    FAILURE = "f", _("Import failed - not imported")
+    SCRAPER_FAILURE = "fs", _("Import failed - scraper not found")
+    JSON_FAILURE = "fj", _("Import failed - JSON write failure")
 
 
 class IngestionRecord(models.Model):
