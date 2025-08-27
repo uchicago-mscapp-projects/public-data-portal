@@ -40,6 +40,7 @@ def index(request):
 def dataset_detail(request, dataset_id):
     ds = get_object_or_404(DataSet, id=dataset_id)
 
+    # tabs for now; reorg later
     tabs = [
         {"id": "details", "title": "Details"},
         {"id": "metadata", "title": "Metadata"},
@@ -48,29 +49,10 @@ def dataset_detail(request, dataset_id):
     ]
 
     context = {
-        # LATER: get variables from dataset
         "ds": ds,
         "files": DataSetFile.objects.filter(dataset__id=dataset_id),
         "collections": [collection for collection in ds.curated_collections.all()],
         "tabs": tabs,
     }
 
-    # just to demonstrate, here is how you would obtain a parameter from the
-    # querystring (e.g. /?name=Bart). request.GET is a dictionary of these
-    # parameters
-
-    # TO DO: implement tabs to show collections / UGC with query strings
-    # context["name"] = request.GET.get("name", "anonymous user")
-
-    # Aside: Any time you see code taking untrusted user input be suspicious!
-    #  In older web frameworks, the code here would lead to a vulnerability
-    #  since a user could put ?name=<some malicious html...> and inject that
-    #  into the page.
-    #
-    # In practice, Django templates by default disallow HTML, which will
-    # prevent this attack. Keep in mind that all input from the internet
-    # is potentially hostile and should be escaped/treated with caution.
-
-    # most views will end with a call to render, passing the template name
-    # and context dictionary
     return render(request, "dataset_detail.html", context)

@@ -12,7 +12,7 @@ Dataset detail view; in progress
 
 {% block content %}
 
-  <div class="title"> {# in HTML id is optional, naming the div for future reference #}
+  <div class="title">
   <h1>{{ ds.name }}</h1>
   </div>
 
@@ -26,6 +26,7 @@ Dataset detail view; in progress
   </div>
   {% endif %}
 
+  {# Download dropdown menu #}
   <div class="block">
     <div class="dropdown is-hoverable">
       <div class="dropdown-trigger">
@@ -39,7 +40,7 @@ Dataset detail view; in progress
       <div class="dropdown-menu" id="dropdown-menu" role="menu">
         <div class="dropdown-content">
           {% for file in files %}
-            <a href="{{ file.url }}" target="_blank" class="dropdown-item"> {{ file.file_type }}</a>
+            <a href="{{ file.url }}" target="_blank" class="dropdown-item">{{ file.file_type }} ({{ file.file_size_mb }}MB)</a>
           {% endfor %}
         </div>
       </div>
@@ -50,6 +51,7 @@ Dataset detail view; in progress
     <p>Quality Score: {{ ds.quality_score }}</p>
   </div>
 
+{# tabs for details/metadata/ugc/collections; reorg layout later #}
 <div>
   <div class="tabs is-boxed">
     <ul>
@@ -89,6 +91,7 @@ Dataset detail view; in progress
   </div>
 </div>
 
+{% JS in html file for testing; abstract out later %}
 <style>
   .tab-pane {
     display: none;
