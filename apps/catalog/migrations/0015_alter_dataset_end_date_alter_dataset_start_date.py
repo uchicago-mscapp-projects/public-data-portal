@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('catalog', '0014_alter_dataset_quality_score'),
+        ("catalog", "0014_alter_dataset_quality_score"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dataset',
-            name='end_date',
+            model_name="dataset",
+            name="end_date",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='dataset',
-            name='start_date',
+            model_name="dataset",
+            name="start_date",
             field=models.DateField(blank=True, null=True),
         ),
     ]

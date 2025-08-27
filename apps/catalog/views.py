@@ -52,6 +52,7 @@ def dataset_detail(request, dataset_id):
         "ds": ds,
         "files": DataSetFile.objects.filter(dataset__id=dataset_id),
         "collections": [collection for collection in ds.curated_collections.all()],
+        # "tags": ds.tags,
         "tabs": tabs,
     }
 

@@ -12,12 +12,14 @@ Dataset detail view; in progress
 
 {% block content %}
 
-  <div class="title">
-  <h1>{{ ds.name }}</h1>
-  </div>
+  <div class="block" id="header">
+    <div class="title">
+      <h1>{{ ds.name }}</h1>
+    </div>
 
-  <div class="subtitle">
-  <h2>{{ ds.region }} | {{ ds.publisher }}</h2>
+    <div class="subtitle">
+      <h2>{{ ds.region }} | {{ ds.publisher }}</h2>
+    </div>
   </div>
 
   {% if ds.temporal_collection %}
@@ -50,6 +52,10 @@ Dataset detail view; in progress
   <div class="block" id="quality-score">
     <p>Quality Score: {{ ds.quality_score }}</p>
   </div>
+
+<div>
+  <span class="tag"> Tag label </span>
+</div>
 
 {# tabs for details/metadata/ugc/collections; reorg layout later #}
 <div>
@@ -91,7 +97,7 @@ Dataset detail view; in progress
   </div>
 </div>
 
-{% JS in html file for testing; abstract out later %}
+{# JS in html file for testing; abstract out later #}
 <style>
   .tab-pane {
     display: none;
