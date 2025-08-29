@@ -50,6 +50,7 @@ def clear_db(name: str):
         DataSet.objects.filter(scraper=name).delete()
         logger.info(f"{name} datasets has been removed from the database.")
 
+
 def set_dir_path(name: str):
     cwd = os.getcwd()
     dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
@@ -101,23 +102,21 @@ def ingest_to_db(name: str):
     incoming_datasets = load_incoming_ds(name)
     incoming_ds_ids = set()
 
-    for i, dataset in enumerate(incoming_datasets):
-        # only run on first iteration
-        if i == 0:
-            # retrieve/create corresponding publisher obj for dataset in db
-            publisher, _ = Publisher.objects.get_or_create(
-                name=dataset["publisher_name"],
-                defaults={
-                    "kind": PublisherKind.GOV_NATIONAL,  # will need to revisit this
-                    "url": dataset["publisher_url"],
-                },
-            )
+    # load in existing db entries for scraper into flattened set
+    db_entries = DataSet.objects.filter(scraper=name)
+    db_entries_ids = set(db_entries.values_list("upstream_id", flat=True))
 
-            # load in existing db entries for publisher into flattened set
-            db_entries = DataSet.objects.filter(publisher=publisher)
-            db_entries_ids = set(db_entries.values_list("upstream_id", flat=True))
+    for dataset in incoming_datasets:
+        # retrieve/create corresponding publisher obj for dataset in db
+        publisher, _ = Publisher.objects.get_or_create(
+            name=dataset["publisher_name"],
+            defaults={
+                "kind": PublisherKind.GOV_NATIONAL,  # will need to revisit this
+                "url": dataset["publisher_url"],
+            },
+        )
 
-        # for each iter, retrieve/create corresponding region obj for dataset in db
+        # retrieve/create corresponding region obj for dataset in db
         region, _ = Region.objects.get_or_create(
             country_code=dataset["region_country_code"], defaults={"name": dataset["region_name"]}
         )
@@ -133,8 +132,8 @@ def ingest_to_db(name: str):
             "source_url": dataset["source_url"],
             "upstream_id": dataset["upstream_id"],
             "license": dataset["license"],
-            "quality_score": 0,
-            "scraper":name,
+            "quality_score": -1,
+            "scraper": name,
         }
 
         ds_obj, _ = DataSet.objects.update_or_create(
