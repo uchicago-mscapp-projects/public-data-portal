@@ -53,8 +53,11 @@ Dataset detail view; in progress
     <p>Quality Score: {{ ds.quality_score }}</p>
   </div>
 
-<div>
+<div class="block">
   <span class="tag"> Tag label </span>
+  {% for tag in tags %}
+    <span class="tag"> {{ tag }} </span>
+  {% endfor %}
 </div>
 
 {# tabs for details/metadata/ugc/collections; reorg layout later #}
