@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Public Data Portal
+{% endblock %}
+
+{% block content %}
+
+  <div class="block">
+    <form action="" method="get">
+      <div class="field has-addons">
+    <div class="control has-icons-left is-expanded">
+      <input class="input" type="text" placeholder="Search..." name="keyword" id="searchInput">
+      <span class="icon is-small is-left">
+        <i class="fas fa-search"></i> <!-- Font Awesome search icon -->
+      </span>
+    </div>
+    <div class="control">
+      <button class="button is-info" type="submit">Search</button>
+    </div>
+  </div>
+    </form>
+  </div>
+
+  <div class="block"> 
+  <div id="greeting"> {# in HTML id is optional, naming the div for future reference #}
+  <h2>Search Results:</h2>
+  </div>
+
+  <div id="greeting"> {# in HTML id is optional, naming the div for future reference #}
+  <h2>{{n_results}} results found for <b>datasets</b> containing the keyword "{{keyword}}".
+  </h2>
+  </div>
+  </div>
+
+  {% for dset in page %}
+  <div class="box">
+    <p>
+        <b>
+            <a href="http://127.0.0.1:8000/dataset/{{dset.pk}}/">{{ dset.name }}</a>
+        </b>
+    </p>
+    <p>Published by {{ dset.publisher }}</p>
+    <p>Last updated {{ dset.upstream_upload_time|date:"F j, Y" }}</p>
+  </div>
+  {% endfor %}
+
+  <div class="field">
+    <label class="label">Results per page:</label>
+    <div class="control">
+      <div class="select">
+        <select id="resultsPerPage">
+          <option value="10">10</option>
+          <li>
+            <a href="?limit=25&page=1" class="dropdown-item"> 10 </a>
+          </li>
+          <option value="25">25</option>
+            <a href="?limit=25&page={{ page.number }}" class="dropdown-item"> This is a link </a>
+          <option value="50">50</option>
+            <a href="?limit=50&page={{ page.number }}" class="dropdown-item"> This is a link </a>
+          <option value="100">100</option>
+            <a href="?limit=100&page={{ page.number }}" class="dropdown-item"> This is a link </a>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <nav class="pagination" role="navigation" aria-label="pagination">
+  {% if page.has_previous %}
+    <a href="?page={{ page.previous_page_number }}" class="pagination-previous">Previous</a>
+  {% endif %}
+  {% if page.has_next %}
+    <a href="?page={{ page.next_page_number }}" class="pagination-next">Next page</a>
+  {% endif %}
+  <ul class="pagination-list">
+    {% if page.has_previous %}
+    <li>
+      <a href="?page=1" class="pagination-link" aria-label="Goto page 1">1</a>
+    </li>
+      {% if page.number > 2 %}
+        <li>
+        <span class="pagination-ellipsis">&hellip;</span>
+        </li>
+        <li>
+        <a href="?page={{ page.previous_page_number }}" class="pagination-link" aria-label="Goto previous page">{{page.previous_page_number}}</a>
+        </li>
+      {% endif %}
+    {% endif %}
+    <li>
+      <a
+        class="pagination-link is-current"
+        aria-label="Page {{page_num}}"
+        aria-current="page"
+        >{{page.number}}</a
+      >
+    </li>
+    {% if page.has_next %}
+      {% if page.paginator.num_pages > page.next_page_number %}
+        <li>
+        <a href="?page={{ page.next_page_number }}" class="pagination-link" aria-label="Goto page {{page.next_page_number}}">{{page.next_page_number}}</a>
+        </li>
+        <li>
+        <span class="pagination-ellipsis">&hellip;</span>
+        </li>
+      {% endif %}
+    <li>
+      <a href="?page={{ page.paginator.num_pages }}" class="pagination-link" aria-label="Goto page 86">{{page.paginator.num_pages}}</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+
+{% endblock %}

@@ -9,6 +9,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     # maps the default "/" URL to our index page
     path("", cat_views.index),
+    path("search/<str:keyword>", cat_views.search)
 ]
 
 if settings.DEBUG and not settings.IS_TESTING:
