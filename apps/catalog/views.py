@@ -38,15 +38,16 @@ def index(request):
     # and context dictionary
     return render(request, "index.html", context)
 
-def search(request):
-    #currently doing single keyword search
-    #plan to implement
-        #multiword query
-            #will require string processing probably
-            #want to think about relevance and ordering of results
-        #filtering for region, time, publisher...
 
-    keyword = request.GET.get('keyword', 'test')
+def search(request):
+    # currently doing single keyword search
+    # plan to implement
+    # multiword query
+    # will require string processing probably
+    # want to think about relevance and ordering of results
+    # filtering for region, time, publisher...
+
+    keyword = request.GET.get("keyword", "test")
 
     dsets = DataSet.objects.all()
     limit = int(request.GET.get("limit", 11))
