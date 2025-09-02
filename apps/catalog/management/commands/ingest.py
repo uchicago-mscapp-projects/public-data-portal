@@ -14,28 +14,41 @@ app = Typer()
 
 
 @app.command()
+
 def command(self, name: str, cleardb: bool, ingestonly: bool):
     if cleardb:
         clear_db(name)
 
     if not ingestonly:
+        # We have two potential strategies:
+        #
+        # 1) (preferred) list_datasets returns partial datasets
+        #    which are then hydrated by get_dataset_details
+        # 2) get_full_datasets returns fully-hydrated data sets
         try:
             mod = importlib.import_module(f"ingestion.{name}")
-            list_datasets = mod.list_datasets
-            get_dataset_details = mod.get_dataset_details
-        except (ImportError, AttributeError) as e:
+
+            if not hasattr(mod, "list_datasets") or not hasattr(mod, "get_dataset_details"):
+                # will raise AttributError if none of the 3 are found
+                get_full_datasets = mod.get_full_datasets
+            else:
+                # combine the two here for now, better logic TBD
+                def get_full_datasets():
+                    for pd in mod.list_datasets():
+                        print(pd)
+                        yield mod.get_dataset_details(pd)
+
+        except ImportError as e:
             self.secho(f"Could not import: {e}", fg="red")
             return
+        except AttributeError:
+            self.secho("Module did not contain list_datasets/get_dataset_details or get_full_datasets")
 
-        self.secho(f"Running ingestion.{name}.list_datasets()", fg="blue")
+        self.secho(f"Running ingestion.{name}", fg="blue")
 
-        prep_dir(name)
-
-        for pd in list_datasets():
-            logger.info("partial dataset", pdata=pd)
-            details = get_dataset_details(pd)
+        for details in get_full_datasets():
             logger.info("details", detail=details)
-
+            # TODO: this should save the datasets to disk & then import them
             if details is None:
                 continue
             save_to_json(details, name)
