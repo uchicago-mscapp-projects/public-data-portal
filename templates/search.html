@@ -67,22 +67,22 @@
 
   <nav class="pagination" role="navigation" aria-label="pagination">
   {% if page.has_previous %}
-    <a href="?page={{ page.previous_page_number }}" class="pagination-previous">Previous</a>
+    <a href="?keyword={{ keyword }}&page={{ page.previous_page_number }}" class="pagination-previous">Previous</a>
   {% endif %}
   {% if page.has_next %}
-    <a href="?page={{ page.next_page_number }}" class="pagination-next">Next page</a>
+    <a href="?keyword={{ keyword }}&page={{ page.next_page_number }}" class="pagination-next">Next page</a>
   {% endif %}
   <ul class="pagination-list">
     {% if page.has_previous %}
     <li>
-      <a href="?page=1" class="pagination-link" aria-label="Goto page 1">1</a>
+      <a href="?keyword={{ keyword }}&page=1" class="pagination-link" aria-label="Goto page 1">1</a>
     </li>
       {% if page.number > 2 %}
         <li>
         <span class="pagination-ellipsis">&hellip;</span>
         </li>
         <li>
-        <a href="?page={{ page.previous_page_number }}" class="pagination-link" aria-label="Goto previous page">{{page.previous_page_number}}</a>
+        <a href="?keyword={{ keyword }}&page={{ page.previous_page_number }}" class="pagination-link" aria-label="Goto previous page">{{page.previous_page_number}}</a>
         </li>
       {% endif %}
     {% endif %}
@@ -97,14 +97,14 @@
     {% if page.has_next %}
       {% if page.paginator.num_pages > page.next_page_number %}
         <li>
-        <a href="?page={{ page.next_page_number }}" class="pagination-link" aria-label="Goto page {{page.next_page_number}}">{{page.next_page_number}}</a>
+        <a href="?keyword={{ keyword }}&page={{ page.next_page_number }}" class="pagination-link" aria-label="Goto page {{page.next_page_number}}">{{page.next_page_number}}</a>
         </li>
         <li>
         <span class="pagination-ellipsis">&hellip;</span>
         </li>
       {% endif %}
     <li>
-      <a href="?page={{ page.paginator.num_pages }}" class="pagination-link" aria-label="Goto page 86">{{page.paginator.num_pages}}</a>
+      <a href="?keyword={{ keyword }}&page={{ page.paginator.num_pages }}" class="pagination-link" aria-label="Goto page 86">{{page.paginator.num_pages}}</a>
     </li>
     {% endif %}
   </ul>

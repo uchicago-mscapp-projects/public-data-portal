@@ -38,26 +38,28 @@ def index(request):
     # and context dictionary
     return render(request, "index.html", context)
 
-def search(request, keyword):
-    #TODO: implement view to explore and paginate through search results
+def search(request):
+    #currently doing single keyword search
+    #plan to implement
+        #multiword query
+            #will require string processing probably
+            #want to think about relevance and ordering of results
+        #filtering for region, time, publisher...
 
-    # keyword = request.GET.get('keyword')
-    print(keyword)
+    keyword = request.GET.get('keyword', 'test')
+
     dsets = DataSet.objects.all()
-
     limit = int(request.GET.get("limit", 11))
 
     if keyword:
         result_dsets = dsets.filter(Q(name__icontains=keyword) | Q(description__icontains=keyword))
-        display_dsets = list(result_dsets)#[offset:offset + limit]
+        display_dsets = list(result_dsets)
         n_results = result_dsets.count()
 
-    paginator = Paginator(display_dsets, limit)  # Show 15 contacts per page.
+    paginator = Paginator(display_dsets, limit)  # default 11 contacts per page
 
     page_number = request.GET.get("page")
-    print(page_number)
     page_obj = paginator.get_page(page_number)
-    print(page_obj)
 
     context = {
         "keyword": keyword,
