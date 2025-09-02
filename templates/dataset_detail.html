@@ -50,7 +50,11 @@ Dataset detail view; in progress
   </div>
 
   <div class="block" id="quality-score">
+    {% if ds.quality_score == -1 %}
+    <p>Quality Score: quality score not available</p>
+    {% else %}
     <p>Quality Score: {{ ds.quality_score }}</p>
+    {% endif %}
   </div>
 
 <div class="block">
