@@ -3,7 +3,7 @@ import structlog
 from django_typer.management import Typer
 from ingestion.utils import logger
 from django.utils import timezone
-from apps.catalog.models import DataSet, Publisher, DataSetFile
+from apps.catalog.models import DataSetFile
 
 app = Typer()
 
@@ -15,40 +15,33 @@ def command(self):
 
 
 def mirror_datasets():
-    # retrieve all publishers marked for mirroring, flatten names into list
-    mirror_publishers = Publisher.objects.filter(mirror=True)
-    mirror_publishers_names = set(mirror_publishers.values_list("name", flat=True))
+    # retrieve all dataset files for given publisher not already mirrored
+    files = DataSetFile.objects.filter(dataset__publisher__mirror=True, last_mirrored__isnull=True)
 
-    for publisher_name in mirror_publishers_names:
-        # retrieve all datasets for given publisher, flatten upstream ids into list
-        datasets = DataSet.objects.filter(publisher__name=publisher_name)
-        dataset_ids = set(datasets.values_list("upstream_id", flat=True))
+    updated_dataset_files = []
+    updated_publishers = set()
 
-        for dataset_id in dataset_ids:
-            # retrieve all dataset file objects for given dataset
-            dataset_files = DataSetFile.objects.filter(
-                dataset__upstream_id=dataset_id, dataset__publisher__name=publisher_name
-            )
-            updated_dataset_files = []
+    # iterate over mirror-specified dataset files, loading into memory in 1000 size intervals
+    # to avoid overbearing system
+    for dataset_file in files.iterator(chunk_size=1000):
+        # use helper method for new block storage url
+        new_url = download_dataset(dataset_file.url)
 
-            for dataset_file in dataset_files:
-                # use helper method for new block storage url
-                new_url = download_dataset(dataset_file.url)
+        # update url, mirror timestamp, add dataset file to list for bulk update later
+        dataset_file.mirrored_url = new_url
+        dataset_file.last_mirrored = timezone.now()
+        updated_dataset_files.append(dataset_file)
 
-                # update url, add dataset file to list for bulk update later
-                dataset_file.url = new_url
-                updated_dataset_files.append(dataset_file)
+        updated_publishers.add(dataset_file.dataset.publisher.name)
 
-            # chatgpt helped with this -->
-            # asked if possible to update multiple objects at once with diff values
-            DataSetFile.objects.bulk_update(updated_dataset_files, ["url"])
+    if updated_dataset_files:
+        # runs singular SQL query for entire batch for efficiency, updating only
+        # mirrored_url and last_mirrored fields
+        DataSetFile.objects.bulk_update(updated_dataset_files, ["mirrored_url", "last_mirrored"])
 
-        # chatgpt --> asked if way to update multiple objects at once with same value
-        DataSet.objects.filter(publisher__name=publisher_name, upstream_id__in=dataset_ids).update(
-            last_mirrored=timezone.now()
-        )
-
-        logger.info(f"Datasets successfully mirrored for publisher: {publisher_name}")
+    print("Mirrored publishers:")
+    for publisher_name in list(updated_publishers):
+        print(publisher_name)
 
 
 # will update this once block storage info sorted out

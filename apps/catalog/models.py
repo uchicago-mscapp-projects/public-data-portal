@@ -45,7 +45,7 @@ class Publisher(models.Model):
     name = models.TextField()
     kind = models.CharField(max_length=2, choices=PublisherKind)
     url = models.URLField()
-    mirror = models.BooleanField()
+    mirror = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} - {self.kind}"
@@ -126,7 +126,6 @@ class DataSet(models.Model):
         CuratedCollection, null=True, blank=True, related_name="datasets"
     )
     quality_score = models.IntegerField()
-    last_mirrored = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     scraper = models.TextField(null=True)
@@ -146,6 +145,8 @@ class DataSetFile(models.Model):
     dataset = models.ForeignKey(DataSet, on_delete=models.CASCADE, related_name="files")
     original_url = models.URLField()
     url = models.URLField()
+    mirrored_url = models.URLField(null=True)
+    last_mirrored = models.DateTimeField(null=True)
     file_type = models.CharField(choices=FileType)
     file_size_mb = models.IntegerField()  # file size in megabytes
 
