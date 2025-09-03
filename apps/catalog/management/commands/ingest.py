@@ -44,6 +44,8 @@ def command(self, name: str, cleardb: bool, ingestonly: bool):
         except AttributeError:
             self.secho("Module did not contain list_datasets/get_dataset_details or get_full_datasets")
 
+        prep_dir(name)
+
         self.secho(f"Running ingestion.{name}", fg="blue")
 
         for details in get_full_datasets():
@@ -67,6 +69,7 @@ def clear_db(name: str):
 def set_dir_path(name: str):
     cwd = os.getcwd()
     dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+    dir_path = os.path.normpath(dir_path)
 
     return dir_path
 
