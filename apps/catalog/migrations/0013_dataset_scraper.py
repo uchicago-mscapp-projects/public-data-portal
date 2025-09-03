@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('catalog', '0012_alter_datasetfile_file_type'),
+        ("catalog", "0012_alter_datasetfile_file_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dataset',
-            name='scraper',
-            field=models.TextField(default='na_scraper'),
+            model_name="dataset",
+            name="scraper",
+            field=models.TextField(default="na_scraper"),
             preserve_default=False,
         ),
     ]
