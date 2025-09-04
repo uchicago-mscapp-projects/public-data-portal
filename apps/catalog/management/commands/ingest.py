@@ -68,7 +68,7 @@ def clear_db(name: str):
 
 def set_dir_path(name: str):
     cwd = os.getcwd()
-    dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+    dir_path = f"{cwd}/ingest_json/{name}"
     dir_path = os.path.normpath(dir_path)
 
     return dir_path
@@ -80,11 +80,11 @@ def prep_dir(name: str):
     # if directory already exists, empty for overwrite
     if os.path.exists(dir_path):
         empty_dir(name)
-        logger.info(f"Existing {name} directory has been emptied.")
+        logger.info(f"Existing {dir_path} directory has been emptied.")
     # otherwise create directory for first scrape data
     else:
         os.makedirs(dir_path, exist_ok=True)
-        logger.info(f"New directory {name} has been created.")
+        logger.info(f"New directory {dir_path} has been created.")
 
 
 def save_to_json(updata: UpstreamDataset, name: str):
