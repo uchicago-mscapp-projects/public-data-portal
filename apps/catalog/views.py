@@ -70,3 +70,14 @@ def search(request):
     }
 
     return render(request, "search.html", context)
+
+#powerset of a query phrase
+#group by # of words
+#remove stopwords from 2s and 1s
+#prioritize results that match longer phrases
+#turn to lists and staple together accordingly
+
+#ask about postgres sql full text search
+
+#collapsible, with sections and then checkboxes, checkboxes will create query
+## parameters to filter search
