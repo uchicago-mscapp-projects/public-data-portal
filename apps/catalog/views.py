@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
+from django.core.paginator import Paginator
 from .models import DataSet, Publisher, DataSetFile
 
 
@@ -57,3 +59,36 @@ def dataset_detail(request, dataset_id):
     }
 
     return render(request, "dataset_detail.html", context)
+
+
+def search(request):
+    # currently doing single keyword search
+    # plan to implement
+    # multiword query
+    # will require string processing probably
+    # want to think about relevance and ordering of results
+    # filtering for region, time, publisher...
+
+    keyword = request.GET.get("keyword", "test")
+
+    dsets = DataSet.objects.all()
+    limit = int(request.GET.get("limit", 11))
+
+    if keyword:
+        result_dsets = dsets.filter(Q(name__icontains=keyword) | Q(description__icontains=keyword))
+        display_dsets = list(result_dsets)
+        n_results = result_dsets.count()
+
+    paginator = Paginator(display_dsets, limit)  # default 11 contacts per page
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "keyword": keyword,
+        "search_results": display_dsets,
+        "n_results": n_results,
+        "page": page_obj,
+    }
+
+    return render(request, "search.html", context)
