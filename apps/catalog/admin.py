@@ -34,6 +34,7 @@ class DataSetAdmin(admin.ModelAdmin):
     fields = [
         "name",
         "description",
+        "scraper",
         ("publisher", "region"),
         ("start_date", "end_date"),
         ("created_at", "updated_at"),
