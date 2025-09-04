@@ -14,7 +14,7 @@ app = Typer()
 
 
 @app.command()
-def command(self, name: str, cleardb: bool, ingestonly: bool):
+def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
     if cleardb:
         clear_db(name)
 
