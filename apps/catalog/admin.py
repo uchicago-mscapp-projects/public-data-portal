@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     Publisher,
+    Region,
     DataSet,
     DataSetFile,
     IdentifierKind,
@@ -22,13 +23,24 @@ class DataSetFileInline(admin.TabularInline):
     model = DataSetFile
 
 
+class RegionAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Region, RegionAdmin)
+
+
 class DataSetAdmin(admin.ModelAdmin):
     fields = [
         "name",
         "description",
         ("publisher", "region"),
+        ("start_date", "end_date"),
         ("created_at", "updated_at"),
         ("source_url", "upstream_id", "upstream_upload_time"),
+        "quality_score",
+        "temporal_collection",
+        "curated_collections",
     ]
     readonly_fields = ("created_at", "updated_at")
     inlines = [
@@ -67,8 +79,14 @@ class CrosswalkAdmin(admin.ModelAdmin):
 admin.site.register(Crosswalk, CrosswalkAdmin)
 
 
+class DataSetInline(admin.TabularInline):
+    model = DataSet
+
+
 class TemporalCollectionAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        DataSetInline,
+    ]
 
 
 admin.site.register(TemporalCollection, TemporalCollectionAdmin)

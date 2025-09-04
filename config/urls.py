@@ -9,6 +9,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     # maps the default "/" URL to our index page
     path("", cat_views.index),
+    path("dataset/<int:dataset_id>/", cat_views.dataset_detail),
 ]
 
 if settings.DEBUG and not settings.IS_TESTING:
