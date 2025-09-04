@@ -14,7 +14,6 @@ app = Typer()
 
 
 @app.command()
-
 def command(self, name: str, cleardb: bool, ingestonly: bool):
     if cleardb:
         clear_db(name)
@@ -42,7 +41,10 @@ def command(self, name: str, cleardb: bool, ingestonly: bool):
             self.secho(f"Could not import: {e}", fg="red")
             return
         except AttributeError:
-            self.secho("Module did not contain list_datasets/get_dataset_details or get_full_datasets")
+            self.secho("""Module did not contain
+                       list_datasets/get_dataset_details or get_full_datasets""")
+
+        prep_dir(name)
 
         self.secho(f"Running ingestion.{name}", fg="blue")
 
@@ -67,6 +69,7 @@ def clear_db(name: str):
 def set_dir_path(name: str):
     cwd = os.getcwd()
     dir_path = f"{os.path.dirname(cwd)}/ingest_json/{name}"
+    dir_path = os.path.normpath(dir_path)
 
     return dir_path
 
