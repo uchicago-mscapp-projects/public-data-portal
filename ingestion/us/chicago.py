@@ -1,6 +1,7 @@
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset
 from ingestion.utils import make_request
+from time import sleep
 import json
 
 """
@@ -13,7 +14,7 @@ CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false
 ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
 
 # ids that are known to have errors
-KNOWN_BAD = "uwhj-p95a"
+KNOWN_BAD = ("uwhj-p95a",)
 
 
 def extract_updata(catalog):
@@ -89,6 +90,7 @@ def get_full_datasets():
 
     # first json used offset zero, so loop iterates through *next* offsets
     for offset in range(100, n_results, 100):
+        sleep(1)
         updata = extract_updata(cat)
         upstream_lst.extend(updata)
 
