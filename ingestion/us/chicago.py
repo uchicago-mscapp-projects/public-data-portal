@@ -13,6 +13,9 @@ CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false
 # url for "download" purposes
 ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
 
+# ids that are known to have errors
+KNOWN_BAD = "uwhj-p95a"
+
 
 def extract_updata(catalog):
     """takes catalog page of 100 datasets, returns list of upstream datasets"""
@@ -49,7 +52,7 @@ def extract_updata(catalog):
             # # time range covered by data
             # start_date: date | None = None
             # end_date: date | None = None
-            publisher_name=rs["attribution"],
+            publisher_name=rs["attribution"] or "Chicago",
             publisher_url=rs["attribution_link"],
             publisher_upstream_id=rs["id"],
             region_name="Chicago, IL",
@@ -61,6 +64,8 @@ def extract_updata(catalog):
         )
         # check if odata link exists, use for download
         odata = ODATA_URL.format(uds.upstream_id)
+        if uds.upstream_id in KNOWN_BAD:
+            continue
         resp = make_request(odata)
         if resp.status_code == 200:
             download_url = odata
