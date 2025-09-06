@@ -1,7 +1,6 @@
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset
 from ingestion.utils import make_request
-from time import sleep
 import json
 
 """
@@ -90,7 +89,6 @@ def get_full_datasets():
 
     # first json used offset zero, so loop iterates through *next* offsets
     for offset in range(100, n_results, 100):
-        sleep(1)
         updata = extract_updata(cat)
         upstream_lst.extend(updata)
 
