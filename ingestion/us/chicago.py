@@ -2,7 +2,6 @@ from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset
 from ingestion.utils import make_request
 from time import sleep
-import httpx
 import json
 
 """
@@ -62,7 +61,7 @@ def extract_updata(catalog):
         )
         # check if odata link exists, use for download
         odata = ODATA_URL.format(uds.upstream_id)
-        resp = httpx.get(odata)
+        resp = make_request(odata)
         if resp.status_code == 200:
             download_url = odata
         # otherwise just link to portal page

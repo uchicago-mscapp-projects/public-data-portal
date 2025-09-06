@@ -1,7 +1,7 @@
 from typing import Generator
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset, AltStr
-import httpx
+from ingestion.utils import make_request
 import lxml.html
 import json
 import csv
@@ -12,15 +12,6 @@ from functools import reduce
 SITE_URL = "https://search.open.canada.ca/opendata/"
 CSV_URL = "https://open.canada.ca/data/dataset/c4c5c7f1-bfa6-4ff6-b4a0-c164cb2060f7/resource/312a65c5-d0bc-4445-8a24-95b2690cc62b/download/main.csv"
 RECORD_URL = "https://open.canada.ca/data/api/action/package_show?id={}"
-
-
-def make_request(url):
-    """
-    Make an HTTP request with logging & error checking.
-    """
-    resp = httpx.get(url, follow_redirects=True)
-    resp.raise_for_status()
-    return resp
 
 
 def list_datasets() -> Generator[PartialDataset, None, None]:
