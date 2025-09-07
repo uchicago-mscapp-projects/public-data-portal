@@ -88,6 +88,45 @@ class CuratedCollection(models.Model):
         return self.name
 
 
+class IdentifierKind(models.Model):
+    """
+    A kind of identifier common across data sets.
+
+    Example: FIPS, ISO-3166
+    """
+
+    kind = models.TextField()
+
+    def __str__(self):
+        return self.kind
+
+
+class Identifier(models.Model):
+    """
+    An instance of a known identifier of an IdentifierKind.
+
+    Example: 06 (FIPS), DK (ISO)
+    """
+
+    identifier_kind = models.ForeignKey(IdentifierKind, on_delete=models.CASCADE)
+    identifier = models.TextField()
+
+    def __str__(self):
+        return f"{self.identifier} ({self.identifier_kind})"
+
+
+class Crosswalk(models.Model):
+    """
+    A relationship between two identifiers.
+    """
+
+    primary = models.ForeignKey(Identifier, on_delete=models.CASCADE, related_name="crosswalks")
+    secondary = models.ForeignKey(Identifier, on_delete=models.CASCADE, related_name=None)
+
+    def __str__(self):
+        return f"Crosswalk: {self.primary} - {self.secondary}"
+
+
 class DataSet(models.Model):
     """
     Fundamental unit of the catalog, a single data set.
@@ -130,6 +169,10 @@ class DataSet(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     scraper = models.TextField(null=True)
 
+    identifier_kinds = models.ManyToManyField(
+        IdentifierKind, null=True, blank=True, related_name="datasets"
+    )
+
     def __str__(self):
         return f"{self.name}: {self.start_date}-{self.end_date}"
 
@@ -152,45 +195,6 @@ class DataSetFile(models.Model):
 
     def __str__(self):
         return f"{self.dataset.name} File: {self.file_type}, {self.file_size_mb} MB"
-
-
-class IdentifierKind(models.Model):
-    """
-    A kind of identifier common across data sets.
-
-    Example: FIPS, ISO-3166
-    """
-
-    kind = models.TextField()
-
-    def __str__(self):
-        return self.kind
-
-
-class Identifier(models.Model):
-    """
-    An instance of a known identifier of an IdentifierKind.
-
-    Example: 06 (FIPS), DK (ISO)
-    """
-
-    identifier_kind = models.ForeignKey(IdentifierKind, on_delete=models.CASCADE)
-    identifier = models.TextField()
-
-    def __str__(self):
-        return f"{self.identifier} ({self.identifier_kind})"
-
-
-class Crosswalk(models.Model):
-    """
-    A relationship between two identifiers.
-    """
-
-    primary = models.ForeignKey(Identifier, on_delete=models.CASCADE, related_name="crosswalks")
-    secondary = models.ForeignKey(Identifier, on_delete=models.CASCADE, related_name=None)
-
-    def __str__(self):
-        return f"Crosswalk: {self.primary} - {self.secondary}"
 
 
 # class GeoProjection(?)

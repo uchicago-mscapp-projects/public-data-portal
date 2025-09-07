@@ -7,7 +7,15 @@ import glob
 from django_typer.management import Typer
 from ingestion.utils import logger
 from ingestion.data_models import UpstreamDataset
-from apps.catalog.models import DataSet, Publisher, PublisherKind, Region, DataSetFile
+from apps.catalog.models import (
+    DataSet,
+    Publisher,
+    PublisherKind,
+    Region,
+    DataSetFile,
+    IdentifierKind,
+)
+from functools import cache
 
 
 app = Typer()
@@ -137,6 +145,14 @@ def ingest_to_db(name: str):
             country_code=dataset["region_country_code"], defaults={"name": dataset["region_name"]}
         )
 
+        # retrieve corresponding identifier kind objs for dataset in db
+        identifier_kinds = []
+        for kind in dataset["identifier_kinds"]:
+            identifier_kind = get_identifier_kind(kind)
+
+            if identifier_kind:
+                identifier_kinds.append(identifier_kind)
+
         ds_values = {
             "name": dataset["name"],
             "description": dataset["description"],
@@ -150,6 +166,7 @@ def ingest_to_db(name: str):
             "license": dataset["license"],
             "quality_score": -1,
             "scraper": name,
+            "identifier_kinds": identifier_kinds,
         }
 
         ds_obj, _ = DataSet.objects.update_or_create(
@@ -187,3 +204,10 @@ def load_incoming_ds(name: str):
             incoming_datasets.append(incoming_json)
 
     return incoming_datasets
+
+
+@cache
+def get_identifier_kind(kind: str) -> IdentifierKind:
+    # use filter() to allow for None return obj vs. get() which raises exception
+    identifier_kind = IdentifierKind.objects.filter(kind=kind).first()
+    return identifier_kind
