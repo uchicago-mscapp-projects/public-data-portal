@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from .models import DataSet, Publisher
+from django.shortcuts import render, get_object_or_404
+from .models import DataSet, Publisher, DataSetFile
 
 
 def index(request):
@@ -35,3 +35,25 @@ def index(request):
     # most views will end with a call to render, passing the template name
     # and context dictionary
     return render(request, "index.html", context)
+
+
+def dataset_detail(request, dataset_id):
+    ds = get_object_or_404(DataSet, id=dataset_id)
+
+    # tabs for now; reorg later
+    tabs = [
+        {"id": "details", "title": "Details"},
+        {"id": "metadata", "title": "Metadata"},
+        {"id": "comments", "title": "Comments"},
+        {"id": "collections", "title": "Collections"},
+    ]
+
+    context = {
+        "ds": ds,
+        "files": DataSetFile.objects.filter(dataset__id=dataset_id),
+        "collections": [collection for collection in ds.curated_collections.all()],
+        # "tags": ds.tags,
+        "tabs": tabs,
+    }
+
+    return render(request, "dataset_detail.html", context)

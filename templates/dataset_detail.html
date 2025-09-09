@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% comment %}
+Dataset detail view; in progress
+
+{% endcomment %}
+
+
+{% block title %}
+  Public Data Portal | {{ ds.name }} - {{ ds.publisher }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="block" id="header">
+    <div class="title">
+      <h1>{{ ds.name }}</h1>
+    </div>
+
+    <div class="subtitle">
+      <h2>{{ ds.region }} | {{ ds.publisher }}</h2>
+    </div>
+  </div>
+
+  {% if ds.temporal_collection %}
+  <div class="box" id="temporal-collection">
+    <p>This dataset is part of the <a href="#">{{ ds.temporal_collection}}</a> collection.</p>
+  </div>
+  {% endif %}
+
+  {# Download dropdown menu #}
+  <div class="block">
+    <div class="dropdown is-hoverable">
+      <div class="dropdown-trigger">
+        <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+          <span>Download</span>
+          <span class="icon is-small">
+            <i class="fas fa-angle-down" aria-hidden="true"></i>
+          </span>
+        </button>
+      </div>
+      <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+          {% for file in files %}
+            <a href="{{ file.url }}" target="_blank" class="dropdown-item">{{ file.file_type }} ({{ file.file_size_mb }}MB)</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block" id="quality-score">
+    {% if ds.quality_score == -1 %}
+    <p>Quality Score: quality score not available</p>
+    {% else %}
+    <p>Quality Score: {{ ds.quality_score }}</p>
+    {% endif %}
+  </div>
+
+<div class="block">
+  <span class="tag"> Tag label </span>
+  {% for tag in tags %}
+    <span class="tag"> {{ tag }} </span>
+  {% endfor %}
+</div>
+
+{# tabs for details/metadata/ugc/collections; reorg layout later #}
+<div>
+  <div class="tabs is-boxed">
+    <ul>
+      {% for tab in tabs %}
+        <li data-tab="{{ tab.id }}" class="{% if forloop.first %}is-active{% endif %}">
+          <a>{{ tab.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div id="tab-content">
+    <div class="tab-pane is-active" id="details">
+      <div class="block">
+        <p><strong>Publisher</strong>: {{ ds.publisher }}</p>
+        <p><strong>Region</strong>: {{ ds.region }}</p>
+      </div>
+      <div class="block">
+        <p>{{ ds.description }}</p>
+      </div>
+    </div>
+    <div class="tab-pane" id="metadata">
+      <p>Created: {{ ds.created_at }}</p>
+      <p>Updated: {{ ds.updated_at }}</p>
+    </div>
+    <div class="tab-pane" id="comments">
+      <p>Comments and other UGC can go here?</p>
+    </div>
+    <div class="tab-pane" id="collections">
+      {% if ds.temporal_collection %}
+        <div class="button is-info"><a href="#">{{ ds.temporal_collection }}</a></div>
+      {% endif %}
+      {% for collection in collections %}
+        <div class="button"><a href="#">{{ collection.name }}</a></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{# JS in html file for testing; abstract out later #}
+<style>
+  .tab-pane {
+    display: none;
+  }
+  .tab-pane.is-active {
+    display: block;
+  }
+  a { color: inherit; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tabs = document.querySelectorAll(".tabs ul li");
+  const panes = document.querySelectorAll(".tab-pane");
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.tab;
+
+      // remove is-active from all tabs and panes
+      tabs.forEach(t => t.classList.remove("is-active"));
+      panes.forEach(p => p.classList.remove("is-active"));
+
+      // add is-active to the clicked tab and its pane
+      tab.classList.add("is-active");
+      document.getElementById(target).classList.add("is-active");
+    });
+  });
+});
+</script>
+
+{% endblock %}
