@@ -6,11 +6,11 @@
 
 {% block content %}
 
-  <div class="block">
+  <div class="block" id="search box">
     <form action="" method="get">
       <div class="field has-addons">
     <div class="control has-icons-left is-expanded">
-      <input class="input" type="text" placeholder="Search..." name="keyword" id="searchInput">
+      <input class="input" type="text" placeholder="Search..." name="query" id="searchInput">
       <span class="icon is-small is-left">
         <i class="fas fa-search"></i> <!-- Font Awesome search icon -->
       </span>
@@ -22,12 +22,130 @@
     </form>
   </div>
 
+<!-- Advanced search goes here -->
+
+<div role="search">
+  <form name="searchForm" id="advSearchForm" method="get" action="">
+        <div class="mainbody left">
+                  <div class="clearfix">
+        <h2 class="pull-left flip">Advanced Search</h2>
+        <!-- <div id="groupJoin" class="form-inline pull-right flip">
+          <label for="groupJoinOptions">Match:</label>
+          <select id="groupJoinOptions" name="join" class="form-control">
+            <option value="AND">ALL Groups</option>
+            <option value="OR">ANY Groups</option>
+          </select>
+        </div>
+      </div> -->
+      <!-- <a role="button" class="icon-link hidden" id="groupPlaceHolder" href="#">
+        <span class="icon icon--font fa&#x20;fa-plus-circle icon-link__icon" role="img" aria-hidden="true"></span> -->
+      </a>
+            <div class="no-js">
+                                            <div id="new_group_template">
+                        <div id="group0" class="adv-group">
+              <div class="adv-group-terms">
+                <label class="adv-group-label">Search for:</label>
+                                                      <div id="new_search_template">
+                                    <div id="search0_0" class="adv-search">
+                    <select class="adv-term-type form-control" name="type0[]" aria-label="Search&#x20;type">
+                        <div class="select">
+                                              <option value="AllFields">All Fields</option>
+                                              <option value="Title">File Type</option>
+                                              <option value="LastUpdated">Last Updated</option>
+                                              <option value="Publisher">Publisher</option>
+                                              <option value="PublisherKind">Publisher Kind</option>
+                                              <option value="QualityScore">Quality Score</option>
+                                              <option value="Region">Region</option>
+                                              <option value="Topic">Topic</option>
+                                              </div>
+                                          </select>
+                    <select class="adv-term-type form-control" name="type0[]" aria-label="Search&#x20;type">
+                                              <option value="Contains">contains</option>
+                                              <option value="StartsWith">starts with</option>
+                                              <option value="EndsWith">ends with</option>
+                                              <option value="Excludes">excludes</option>
+                                              <option value="IsEqualTo">is equal to</option>
+                                              <option value="IsLessThan">is less than</option>
+                                              <option value="IsGreaterThan">is greater than</option>
+                                          </select>
+                    <input name="lookfor0[]" id="search_lookfor0_0" class="adv-term-input form-control" type="text" aria-label="Search&#x20;terms">
+                    <a href="#" class="adv-term-remove hidden">
+                      <span class="icon icon--font fa&#x20;fa-times" role="img" aria-hidden="true"></span>                      <span class="sr-only">remove</span>
+                    </a>
+                  </div>
+                                      </div>
+                    <div class="float-left">
+                      <span class="search_place_holder hidden"></span>
+                      <a href="#" class="add_search_link icon-link hidden" role="button">
+                        <span class="icon icon--font fa&#x20;fa-plus-circle icon-link__icon" role="img" aria-hidden="true"></span>                        <span class="icon-link__label">Add Search Field</span>
+                      </a>
+                    </div>
+                                                                      <div id="search0_1" class="adv-search">
+                    <select class="adv-term-type form-control" name="type0[]" aria-label="Search&#x20;type">
+                                              <option value="AllFields">All Fields</option>
+                                              <option value="Title">File Type</option>
+                                              <option value="LastUpdated">Last Updated</option>
+                                              <option value="Publisher">Publisher</option>
+                                              <option value="PublisherKind">Publisher Kind</option>
+                                              <option value="QualityScore">Quality Score</option>
+                                              <option value="Region">Region</option>
+                                              <option value="Topic">Topic</option>
+                                          </select>
+                    <select class="adv-term-type form-control" name="type0[]" aria-label="Search&#x20;type">
+                                              <option value="Contains">contains</option>
+                                              <option value="StartsWith">starts with</option>
+                                              <option value="EndsWith">ends with</option>
+                                              <option value="Excludes">excludes</option>
+                                              <option value="IsEqualTo">is equal to</option>
+                                              <option value="IsLessThan">is less than</option>
+                                              <option value="IsGreaterThan">is greater than</option>
+                                          </select>
+                    <input name="lookfor0[]" id="search_lookfor0_1" class="adv-term-input form-control" type="text" aria-label="Search&#x20;terms">
+                    <a href="#" class="adv-term-remove hidden">
+                      <span class="icon icon--font fa&#x20;fa-times" role="img" aria-hidden="true"></span>                      <span class="sr-only">remove</span>
+                    </a>
+                  </div>
+                                                                      <div id="search0_2" class="adv-search">
+                    <select class="adv-term-type form-control" name="type0[]" aria-label="Search&#x20;type">
+                                              <option value="AllFields">All Fields</option>
+                                              <option value="Title">File Type</option>
+                                              <option value="LastUpdated">Last Updated</option>
+                                              <option value="Publisher">Publisher</option>
+                                              <option value="PublisherKind">Publisher Kind</option>
+                                              <option value="QualityScore">Quality Score</option>
+                                              <option value="Region">Region</option>
+                                              <option value="Topic">Topic</option>
+                                          </select>
+                    <select class="adv-term-type form-control" name="type0[]" aria-label="Search&#x20;type">
+                                              <option value="Contains">contains</option>
+                                              <option value="StartsWith">starts with</option>
+                                              <option value="EndsWith">ends with</option>
+                                              <option value="Excludes">excludes</option>
+                                              <option value="IsEqualTo">is equal to</option>
+                                              <option value="IsLessThan">is less than</option>
+                                              <option value="IsGreaterThan">is greater than</option>
+                                          </select>
+<input name="lookfor0[]" id="search_lookfor0_2" class="adv-term-input form-control" type="text" aria-label="Search&#x20;terms">
+                    <a href="#" class="adv-term-remove hidden">
+                      <span class="icon icon--font fa&#x20;fa-times" role="img" aria-hidden="true"></span>                      <span class="sr-only">remove</span>
+                    </a>
+                  </div>
+                                                </div>
+
+                                    </div>
+      <div class="adv-submit">
+        <input class="button is-light is-small" type="button" value="Clear">
+        <input class="button is-info is-small" type="submit" value="Search">
+      </div>
+
+
+
   <div class="block">
-  <div id="greeting"> {# in HTML id is optional, naming the div for future reference #}
+  <div id="search start">
   <h2>Search Results:</h2>
   </div>
 
-  <div id="greeting"> {# in HTML id is optional, naming the div for future reference #}
+  <div id="n_results"> {# in HTML id is optional, naming the div for future reference #}
   <h2>{{n_results}} results found for <b>datasets</b> containing the keyword "{{keyword}}".
   </h2>
   </div>

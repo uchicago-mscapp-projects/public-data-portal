@@ -45,15 +45,23 @@ def search(request):
     # multiword query
     # will require string processing probably
     # want to think about relevance and ordering of results
-    # filtering for region, time, publisher...
+    # filtering for region, time, publisher type, publisher, file type
 
-    keyword = request.GET.get("keyword", "test")
+    query = request.GET.get("query", "test")
+
+    # region = request.GET.get()
+    # file_type = request.GET.get()
+    # publisher_kind = request.GET.get()
+    # publisher = request.GET.get()
+    # last_updated = request.GET.get()
+    # quality_score = request.GET.get()
+    # separate thing, exclude = request.GET.get()
 
     dsets = DataSet.objects.all()
     limit = int(request.GET.get("limit", 11))
 
-    if keyword:
-        result_dsets = dsets.filter(Q(name__icontains=keyword) | Q(description__icontains=keyword))
+    if query:
+        result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
         display_dsets = list(result_dsets)
         n_results = result_dsets.count()
 
@@ -63,7 +71,7 @@ def search(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "keyword": keyword,
+        "keyword": query,
         "search_results": display_dsets,
         "n_results": n_results,
         "page": page_obj,
@@ -71,13 +79,14 @@ def search(request):
 
     return render(request, "search.html", context)
 
-#powerset of a query phrase
-#group by # of words
-#remove stopwords from 2s and 1s
-#prioritize results that match longer phrases
-#turn to lists and staple together accordingly
 
-#ask about postgres sql full text search
+# powerset of a query phrase
+# group by # of words
+# remove stopwords from 2s and 1s
+# prioritize results that match longer phrases
+# turn to lists and staple together accordingly
 
-#collapsible, with sections and then checkboxes, checkboxes will create query
+# ask about postgres sql full text search
+
+# collapsible, with sections and then checkboxes, checkboxes will create query
 ## parameters to filter search
