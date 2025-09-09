@@ -150,8 +150,14 @@ def ingest_to_db(name: str):
         for kind in dataset["identifier_kinds"]:
             identifier_kind = get_identifier_kind(kind)
 
-            if identifier_kind:
+            if identifier_kind:  # valid IdentifierKind
                 identifier_kinds.append(identifier_kind)
+            else:  # invalid, skip
+                logger.warning(
+                    f"""Identifier kind {kind} not recognized by system and will
+                    be omitted. Please double check or ingest identifier kind into
+                    system using addidentifier.py command."""
+                )
 
         ds_values = {
             "name": dataset["name"],
