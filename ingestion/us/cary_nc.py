@@ -2,7 +2,6 @@ from typing import Generator
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset
 from ingestion.utils import make_request, logger
-import httpx
 import lxml.html
 import json
 import csv
