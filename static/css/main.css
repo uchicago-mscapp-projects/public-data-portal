@@ -83,6 +83,7 @@
   --bulma-danger-s: 78%;
   --bulma-danger-l: 57%;
 }
+
 html, body {
     height: 100vh;
     overflow: hidden;
@@ -103,6 +104,11 @@ html, body {
   color: var(--bulma-primary);
   background-color: white;
 }
+strong[title] {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
 .footer strong, .footer a {
   color: var(--bulma-warning);
   font-weight: 700;
@@ -117,4 +123,7 @@ html, body {
 }
 .source-link {
   text-decoration: underline;
+}
+.main-buttons {
+  align: right;
 }

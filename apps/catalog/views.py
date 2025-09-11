@@ -37,6 +37,10 @@ def index(request):
     return render(request, "index.html", context)
 
 
+def about(request):
+    return render(request, "about.html", {})
+
+
 def dataset_detail(request, dataset_id):
     ds = get_object_or_404(DataSet, id=dataset_id)
 
