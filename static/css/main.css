@@ -1,0 +1,117 @@
+/* via https://gwfh.mranftl.com/fonts/lato?subsets=latin */
+/* lato-300 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 300;
+  src: url('../fonts/lato-v24-latin-300.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* lato-300italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 300;
+  src: url('../fonts/lato-v24-latin-300italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* lato-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/lato-v24-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* lato-italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 400;
+  src: url('../fonts/lato-v24-latin-italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* lato-700 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/lato-v24-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* lato-700italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 700;
+  src: url('../fonts/lato-v24-latin-700italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* lato-900 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 900;
+  src: url('../fonts/lato-v24-latin-900.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+:root {
+  --bulma-family-primary: "Lato";
+  --bulma-primary-h: 208deg;
+  --bulma-primary-s: 29%;
+  --bulma-primary-l: 24%;
+  --bulma-link-h: 187deg;
+  --bulma-link-s: 9%;
+  --bulma-link-l: 62%;
+  --bulma-info-h: 204deg;
+  --bulma-info-s: 70%;
+  --bulma-info-l: 53%;
+  --bulma-success-h: 169deg;
+  --bulma-success-s: 76%;
+  --bulma-success-l: 42%;
+  --bulma-warning-h: 37deg;
+  --bulma-warning-s: 90%;
+  --bulma-warning-l: 51%;
+  --bulma-danger-h: 5deg;
+  --bulma-danger-s: 78%;
+  --bulma-danger-l: 57%;
+}
+html, body {
+    height: 100vh;
+    overflow: hidden;
+}
+.content-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+.navbar {
+    border-bottom: 3px solid lightblue;
+    background-color: var(--bulma-primary);
+}
+.navbar a, .navbar h2 {
+  color: white;
+}
+.navbar a:hover, .navbar a:hover h2 {
+  color: var(--bulma-primary);
+  background-color: white;
+}
+.footer strong, .footer a {
+  color: var(--bulma-warning);
+  font-weight: 700;
+}
+.footer {
+    background-color: var(--bulma-primary);
+    border-top: 3px solid lightblue;
+    color: white;
+}
+.button {
+  color: white;
+}
