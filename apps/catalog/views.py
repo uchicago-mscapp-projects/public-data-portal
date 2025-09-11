@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import DataSet, Publisher, DataSetFile
 
 
@@ -57,3 +57,9 @@ def dataset_detail(request, dataset_id):
     }
 
     return render(request, "dataset_detail.html", context)
+
+
+def random_dataset(request):
+    return redirect(
+        "dataset-detail", DataSet.objects.all().order_by("?").values_list("id", flat=True)[0]
+    )
