@@ -73,9 +73,9 @@
   --bulma-info-h: 204deg;
   --bulma-info-s: 70%;
   --bulma-info-l: 53%;
-  --bulma-success-h: 169deg;
-  --bulma-success-s: 76%;
-  --bulma-success-l: 42%;
+  --bulma-success-h: 140deg;
+  --bulma-success-s: 60%;
+  --bulma-success-l: 40%;
   --bulma-warning-h: 37deg;
   --bulma-warning-s: 90%;
   --bulma-warning-l: 51%;
@@ -114,4 +114,7 @@ html, body {
 }
 .button {
   color: white;
+}
+.source-link {
+  text-decoration: underline;
 }

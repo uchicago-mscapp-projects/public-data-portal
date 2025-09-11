@@ -32,7 +32,7 @@ Dataset detail view; in progress
   <div class="block">
     <div class="dropdown is-hoverable">
       <div class="dropdown-trigger">
-        <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+        <button class="button is-success" aria-haspopup="true" aria-controls="dropdown-menu">
           <span>Download</span>
           <span class="icon is-small">
             <i class="fas fa-angle-down" aria-hidden="true"></i>
@@ -42,7 +42,7 @@ Dataset detail view; in progress
       <div class="dropdown-menu" id="dropdown-menu" role="menu">
         <div class="dropdown-content">
           {% for file in files %}
-            <a href="{{ file.url }}" target="_blank" class="dropdown-item">{{ file.file_type }} ({{ file.file_size_mb }}MB)</a>
+            <a href="{{ file.url }}" target="_blank" class="dropdown-item">{{ file.file_type|upper }} {% if file.file_size_mb %} ({{ file.file_size_mb }}MB) {% endif %}</a>
           {% endfor %}
         </div>
       </div>
@@ -79,16 +79,17 @@ Dataset detail view; in progress
   <div id="tab-content">
     <div class="tab-pane is-active" id="details">
       <div class="block">
-        <p><strong>Publisher</strong>: {{ ds.publisher }}</p>
-        <p><strong>Region</strong>: {{ ds.region }}</p>
+        <p><strong>Source URL:</strong> <a class="source-link" href="{{ ds.source_url }}">{{ ds.source_url }}</a></p>
+        <p><strong title="Timestamp on data provided by publisher..">Published:</strong> {{ ds.upstream_upload_time|date:"Y-m-d" }}</p>
+        <p><strong>Publisher</strong>: {{ ds.publisher.name }} | {{ds.publisher.get_kind_display}}</p>
+        <p><strong>Region</strong>: {{ ds.region.name }} | {{ ds.region.country_code|upper }}</p>
+        <p><strong title="Last time this data set was updated by our scrapers.">Last scraped:</strong> {{ ds.updated_at|date:"Y-m-d" }}</p>
+        <!--<p><strong title="">First seen:</strong> {{ ds.created_at }}</p>-->
       </div>
       <div class="block">
+        <h4 class="title is-4">Description</h4>
         <p>{{ ds.description }}</p>
       </div>
-    </div>
-    <div class="tab-pane" id="metadata">
-      <p>Created: {{ ds.created_at }}</p>
-      <p>Updated: {{ ds.updated_at }}</p>
     </div>
     <div class="tab-pane" id="comments">
       <p>Comments and other UGC can go here?</p>

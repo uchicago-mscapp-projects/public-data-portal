@@ -43,7 +43,6 @@ def dataset_detail(request, dataset_id):
     # tabs for now; reorg later
     tabs = [
         {"id": "details", "title": "Details"},
-        {"id": "metadata", "title": "Metadata"},
         {"id": "comments", "title": "Comments"},
         {"id": "collections", "title": "Collections"},
     ]
