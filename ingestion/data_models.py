@@ -109,6 +109,8 @@ class UpstreamDataset(BaseModel):
 
     license: str = ""
 
+    identifier_kinds: list[str] = Field(default_factory=list)
+
     files: list[UpstreamFile] = Field(default_factory=list)
 
     # These can be used to store variations & translations.
@@ -125,3 +127,6 @@ class UpstreamDataset(BaseModel):
         self.files.append(
             UpstreamFile(url=url, file_type=file_type, name=name, file_size_mb=file_size_mb)
         )
+
+    def add_known_identifier(self, kind: str):
+        self.identifier_kinds.append(kind)
