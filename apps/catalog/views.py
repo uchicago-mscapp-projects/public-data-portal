@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
-from .models import DataSet, Publisher, DataSetFile
+from .models import DataSet, Publisher, Region, DataSetFile
+from urllib.parse import urlparse
 
 
 def index(request):
@@ -62,33 +63,98 @@ def dataset_detail(request, dataset_id):
 
 
 def search(request):
-    # currently doing single keyword search
-    # plan to implement
-    # multiword query
-    # will require string processing probably
-    # want to think about relevance and ordering of results
-    # filtering for region, time, publisher...
+    qd = request.GET.lists()
+    print(qd)
 
-    keyword = request.GET.get("keyword", "test")
+    # outstanding issues
+    # multiword search
+    # should search funnel?
+    # trying to connect datasets to filetypes
+    # clear button
+    # advsearch currently resets, handle like searchbar
+    # page display
+    # defaults to showing all datasets if hit search page without query
 
-    dsets = DataSet.objects.all()
+    result_dsets = DataSet.objects.all()
+
+    # if query:
+    #     result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    #     display_dsets = list(result_dsets)
+
+    for k, v in qd:
+        if k == "query":
+            result_dsets = result_dsets.filter(
+                Q(name__icontains=v[0]) | Q(description__icontains=v[0])
+            )
+        elif k == "PublisherName" and v[0]:
+            pid = Publisher.objects.get(name__icontains=v[0]).id
+            result_dsets = result_dsets.filter(publisherid=pid)
+        elif k == "pubtype":
+            q = Q()
+            for pt in v:
+                print("pt", pt)
+                q |= Q(kind=pt)
+                print("Q", q)
+            pubids = list(Publisher.objects.filter(q).values_list("id", flat=True).distinct())
+            print(pubids)
+            q = Q()
+            for id in pubids:
+                q |= Q(publisher_id=id)
+            result_dsets = result_dsets.filter(q)
+        elif k == "region":
+            regionids = [Region.objects.get(country_code=r).id for r in v]
+            q = Q()
+            for id in regionids:
+                q |= Q(region_id=id)
+            result_dsets = result_dsets.filter(q)
+        elif k == "filetype":
+            continue
+        else:
+            continue
+
+    display_dsets = list(result_dsets)
+    n_results = result_dsets.count()
+
     limit = int(request.GET.get("limit", 11))
 
-    if keyword:
-        result_dsets = dsets.filter(Q(name__icontains=keyword) | Q(description__icontains=keyword))
-        display_dsets = list(result_dsets)
-        n_results = result_dsets.count()
+    # if query:
+    #     result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    #     display_dsets = list(result_dsets)
+    #     n_results = result_dsets.count()
 
-    paginator = Paginator(display_dsets, limit)  # default 11 contacts per page
-
+    paginator = Paginator(display_dsets, limit)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    geoids = list(result_dsets.values_list("region", flat=True).distinct())
+
+    geographies = []
+    for id in geoids:
+        geographies.append(Region.objects.get(id=id).country_code)
+    geographies = sorted(geographies)
+
+    ftypes = list(DataSetFile.objects.values_list("file_type", flat=True).distinct())
+    ftypes = sorted(ftypes)
+
+    print(request.get_full_path())
+
+    # feel like I could be using urlparse in here somehow
+    uri = request.get_full_path()
+    if "page" in uri:
+        index = uri.find("page")
+        print(index)
+        uri = uri[: index - 1]
+    print(uri)
+    print(request.get_full_path())
+
     context = {
-        "keyword": keyword,
+        "keyword": request.GET.get("query", ""),
         "search_results": display_dsets,
         "n_results": n_results,
         "page": page_obj,
+        "geographies": geographies,
+        "filetypes": ftypes,
+        "uri": uri,
     }
 
     return render(request, "search.html", context)
