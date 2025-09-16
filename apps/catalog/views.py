@@ -44,7 +44,14 @@ def search(request):
     qd = request.GET.lists()
     print(qd)
 
-    # query = request.GET.get("query", "")/
+    #outstanding issues
+    #multiword search
+    #should search funnel?
+    #trying to connect datasets to filetypes
+    #clear button
+    #advsearch currently resets, handle like searchbar
+    #page display
+    #defaults to showing all datasets if hit search page without query
 
     result_dsets = DataSet.objects.all()
 
