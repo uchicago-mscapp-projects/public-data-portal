@@ -9,6 +9,8 @@ from .models import (
     Crosswalk,
     TemporalCollection,
     CuratedCollection,
+    IngestionRecord,
+    IngestionRunStatus,
 )
 
 
@@ -98,3 +100,8 @@ class CuratedCollectionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CuratedCollection, CuratedCollectionAdmin)
+
+class IngestionRecordAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(IngestionRecord, IngestionRecordAdmin)

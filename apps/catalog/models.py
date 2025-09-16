@@ -201,15 +201,15 @@ TO DO: data models for ingestion
 
 class IngestionRunStatus(models.TextChoices):
     SUCCESS = "s", _("Success")
-    SCRAPER_FAILURE = "fs", _("Import failed - scraper not found")
-    JSON_FAILURE = "fj", _("Import failed - JSON write failure")
-
+    SCRAPER_FAILURE = "fs", _("Failed: scraper failure")
+    #JSON_FAILURE = "fj", _("Import failed - JSON write failure")
+    DB_WRITE_FAILURE = "fd", _("Failed: write to database failure")
 
 class IngestionRecord(models.Model):
     """
     Record of ingest.py run. 
     """
-
+    # start timing when ingestion record is created
     run_start = models.DateTimeField(auto_now_add=True)
     run_finish = models.DateTimeField()
 
@@ -219,11 +219,15 @@ class IngestionRecord(models.Model):
 
     # name of scraper
     scraper = models.CharField(max_length=100)
+
+    # outcome / exception
     status = models.CharField(max_length=10, choices=IngestionRunStatus)
+    status_message = models.TextField()
 
     # stats on ingestion:
-    existing_datasets = models.IntegerField(default=0)
-    incoming_datasets = models.IntegerField(default=0)
-    datasets_created = models.IntegerField(default=0)
-    datasets_deleted = models.IntegerField(default=0)
+    # from get_or_create in ingest_to_db - bundle into dictionary
+    existing = models.IntegerField(default=0)
+    incoming = models.IntegerField(default=0)
+    created = models.IntegerField(default=0)
+    deleted = models.IntegerField(default=0)
 
