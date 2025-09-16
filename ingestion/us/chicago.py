@@ -50,7 +50,7 @@ def extract_updata(catalog):
             # # time range covered by data
             # start_date: date | None = None
             # end_date: date | None = None
-            publisher_name=rs["attribution"],
+            publisher_name=rs["attribution"] or "",
             publisher_url=rs["attribution_link"],
             publisher_upstream_id=rs["id"],
             region_name="Chicago, IL",

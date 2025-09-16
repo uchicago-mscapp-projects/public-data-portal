@@ -1,11 +1,5 @@
 {% extends "base.html" %}
 
-{% comment %}
-Dataset detail view; in progress
-
-{% endcomment %}
-
-
 {% block title %}
   Public Data Portal | {{ ds.name }} - {{ ds.publisher }}
 {% endblock %}
@@ -13,12 +7,40 @@ Dataset detail view; in progress
 {% block content %}
 
   <div class="block" id="header">
-    <div class="title">
-      <h1>{{ ds.name }}</h1>
-    </div>
+    <h1 class="title">{{ ds.name }}</h1>
 
-    <div class="subtitle">
-      <h2>{{ ds.region }} | {{ ds.publisher }}</h2>
+    <!-- put subtitle & buttons side-by-side -->
+    <div class="columns">
+      <div class="column is-half">
+        <p>a dataset published by</p><h2 class="subtitle">{{ds.publisher.name }} | {{ ds.region.name }} | {{ ds.region.country_code|upper }}</h2>
+      </div>
+      <div class="block column is-half has-text-right">
+        <button class="button is-primary" aria-haspopup="true" aria-controls="dropdown-menu">
+          <span class="icon">
+            <i class="fas fa-star" aria-hidden="true"></i>
+          </span>
+          <span>Save</span>
+        </button>
+        {# Download dropdown menu #}
+          <div class="dropdown is-hoverable">
+            <div class="dropdown-trigger">
+              <button class="button is-success" aria-haspopup="true" aria-controls="dropdown-menu">
+                <span>Download</span>
+                <span class="icon is-small">
+                  <i class="fas fa-angle-down" aria-hidden="true"></i>
+                </span>
+              </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu" role="menu">
+              <div class="dropdown-content">
+                {% for file in files %}
+                  <a href="{{ file.url }}" target="_blank" class="dropdown-item">{{ file.get_file_type_display }} {% if file.file_size_mb %} ({{ file.file_size_mb }}MB) {% endif %}</a>
+                {% endfor %}
+              </div>
+            </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -28,29 +50,12 @@ Dataset detail view; in progress
   </div>
   {% endif %}
 
-  {# Download dropdown menu #}
-  <div class="block">
-    <div class="dropdown is-hoverable">
-      <div class="dropdown-trigger">
-        <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-          <span>Download</span>
-          <span class="icon is-small">
-            <i class="fas fa-angle-down" aria-hidden="true"></i>
-          </span>
-        </button>
-      </div>
-      <div class="dropdown-menu" id="dropdown-menu" role="menu">
-        <div class="dropdown-content">
-          {% for file in files %}
-            <a href="{{ file.url }}" target="_blank" class="dropdown-item">{{ file.file_type }} ({{ file.file_size_mb }}MB)</a>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="block" id="quality-score">
+    {% if ds.quality_score == -1 %}
+    <p>Quality Score: quality score not available</p>
+    {% else %}
     <p>Quality Score: {{ ds.quality_score }}</p>
+    {% endif %}
   </div>
 
 <div class="block">
@@ -75,16 +80,17 @@ Dataset detail view; in progress
   <div id="tab-content">
     <div class="tab-pane is-active" id="details">
       <div class="block">
-        <p><strong>Publisher</strong>: {{ ds.publisher }}</p>
-        <p><strong>Region</strong>: {{ ds.region }}</p>
+        <p><strong>Source URL:</strong> <a class="source-link" href="{{ ds.source_url }}">{{ ds.source_url }}</a></p>
+        <p><strong title="Timestamp on data provided by publisher..">Published:</strong> {{ ds.upstream_upload_time|date:"Y-m-d" }}</p>
+        <p><strong>Publisher</strong>: {{ ds.publisher.name }} ({{ds.publisher.get_kind_display}})</p>
+        <p><strong>Region</strong>: {{ ds.region.name }} | {{ ds.region.country_code|upper }}</p>
+        <p><strong title="Last time this dataset was updated by our scrapers.">Last scraped:</strong> {{ ds.updated_at|date:"Y-m-d" }}</p>
+        <p><strong title="First time this dataset was seen by our scrapers. ">First seen:</strong> {{ ds.created_at|date:"Y-m-d" }}</p>
       </div>
       <div class="block">
+        <h4 class="title is-4">Description</h4>
         <p>{{ ds.description }}</p>
       </div>
-    </div>
-    <div class="tab-pane" id="metadata">
-      <p>Created: {{ ds.created_at }}</p>
-      <p>Updated: {{ ds.updated_at }}</p>
     </div>
     <div class="tab-pane" id="comments">
       <p>Comments and other UGC can go here?</p>
@@ -98,6 +104,17 @@ Dataset detail view; in progress
       {% endfor %}
     </div>
   </div>
+
+
+  <hr>
+
+  <button class="button is-danger" aria-haspopup="true" aria-controls="dropdown-menu">
+    <span class="icon">
+      <i class="fas fa-warning" aria-hidden="true"></i>
+    </span>
+    <span>Report Data Issue</span>
+  </button>
+
 </div>
 
 {# JS in html file for testing; abstract out later #}

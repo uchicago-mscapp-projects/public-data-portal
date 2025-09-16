@@ -128,7 +128,7 @@ def ingest_to_db(name: str):
             name=dataset["publisher_name"],
             defaults={
                 "kind": PublisherKind.GOV_NATIONAL,  # will need to revisit this
-                "url": dataset["publisher_url"],
+                "url": dataset["publisher_url"] or "",
             },
         )
 

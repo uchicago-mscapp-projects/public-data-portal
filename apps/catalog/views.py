@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.core.paginator import Paginator
 from .models import DataSet, Publisher, Region, DataSetFile
@@ -40,13 +40,16 @@ def index(request):
     return render(request, "index.html", context)
 
 
+def about(request):
+    return render(request, "about.html", {})
+
+
 def dataset_detail(request, dataset_id):
     ds = get_object_or_404(DataSet, id=dataset_id)
 
     # tabs for now; reorg later
     tabs = [
         {"id": "details", "title": "Details"},
-        {"id": "metadata", "title": "Metadata"},
         {"id": "comments", "title": "Comments"},
         {"id": "collections", "title": "Collections"},
     ]
@@ -158,3 +161,9 @@ def search(request):
     }
 
     return render(request, "search.html", context)
+
+
+def random_dataset(request):
+    return redirect(
+        "dataset-detail", DataSet.objects.all().order_by("?").values_list("id", flat=True)[0]
+    )
