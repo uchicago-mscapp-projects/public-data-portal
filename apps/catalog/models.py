@@ -12,7 +12,7 @@ class PublisherKind(models.TextChoices):
 
 # NOTE: keep sorted & in sync with ingestion.data_models
 class FileType(models.TextChoices):
-    CSV = "csv", _("Comma-Separated Values")
+    CSV = "csv", _("CSV")
     FGDB = "fgdb/gdb", _("File Geodatabase")
     GEOJSON = "geojson", _("GeoJSON")
     JSON = "json", _("JSON Object")
@@ -44,6 +44,7 @@ class TimePeriod(models.TextChoices):
 class Publisher(models.Model):
     name = models.TextField()
     kind = models.CharField(max_length=2, choices=PublisherKind)
+
     url = models.URLField()
     mirror = models.BooleanField(default=False)
 
@@ -193,6 +194,13 @@ class DataSetFile(models.Model):
     file_type = models.CharField(choices=FileType)
     file_size_mb = models.IntegerField()  # file size in megabytes
 
+    def file_type_and_size(self):
+        """if size is 0, omit"""
+        if self.file_size_mb:
+            return f"{self.dataset.name} File: {self.file_type}, {self.file_size_mb} MB"
+        else:
+            return f"{self.dataset.name} File: {self.file_type}"
+
     def __str__(self):
         return f"{self.dataset.name} File: {self.file_type}, {self.file_size_mb} MB"
 
@@ -203,16 +211,19 @@ class DataSetFile(models.Model):
 TO DO: data models for ingestion
 """
 
+
 class IngestionRunStatus(models.TextChoices):
     SUCCESS = "s", _("Success")
     SCRAPER_FAILURE = "fs", _("Failed: scraper failure")
-    #JSON_FAILURE = "fj", _("Import failed - JSON write failure")
+    # JSON_FAILURE = "fj", _("Import failed - JSON write failure")
     DB_WRITE_FAILURE = "fd", _("Failed: write to database failure")
+
 
 class IngestionRecord(models.Model):
     """
-    Record of ingest.py run. 
+    Record of ingest.py run.
     """
+
     # start timing when ingestion record is created
     run_start = models.DateTimeField(auto_now_add=True)
     run_finish = models.DateTimeField()
@@ -234,4 +245,3 @@ class IngestionRecord(models.Model):
     incoming = models.IntegerField(default=0)
     created = models.IntegerField(default=0)
     deleted = models.IntegerField(default=0)
-
