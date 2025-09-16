@@ -4,6 +4,7 @@ import os
 import shutil
 import json
 import glob
+import datetime
 from django_typer.management import Typer
 from ingestion.utils import logger
 from ingestion.data_models import UpstreamDataset
@@ -14,6 +15,7 @@ from apps.catalog.models import (
     Region,
     DataSetFile,
     IdentifierKind,
+    IngestionRecord,
 )
 from functools import cache
 
@@ -23,6 +25,11 @@ app = Typer()
 
 @app.command()
 def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
+    ingest_record = IngestionRecord()
+    ingest_record.scraper = name
+    ingest_record.cleardb = cleardb
+    ingest_record.ingest_only = ingestonly
+
     if cleardb:
         clear_db(name)
 
@@ -63,7 +70,12 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
                 continue
             save_to_json(details, name)
 
-    ingest_to_db(name)
+    # ingest_to_db(name)
+    ingestion_stats = ingest_to_db(name)
+    ingest_record.run_finish = datetime.now()
+    ingest_record.existing, ingest_record.incoming, ingest_record.created, ingest_record.deleted = (
+        ingestion_stats
+    )
 
 
 def clear_db(name: str):
@@ -130,6 +142,12 @@ def ingest_to_db(name: str):
     db_entries = DataSet.objects.filter(scraper=name)
     db_entries_ids = set(db_entries.values_list("upstream_id", flat=True))
 
+    # create dictionary
+    ingestion_stats = {}
+    ingestion_stats["incoming"] = len(incoming_datasets)
+    ingestion_stats["existing"] = len(db_entries)
+    ingestion_stats["created"] = 0
+
     for dataset in incoming_datasets:
         # retrieve/create corresponding publisher obj for dataset in db
         publisher, _ = Publisher.objects.get_or_create(
@@ -175,11 +193,13 @@ def ingest_to_db(name: str):
             "identifier_kinds": identifier_kinds,
         }
 
-        ds_obj, _ = DataSet.objects.update_or_create(
+        ds_obj, created = DataSet.objects.update_or_create(
             publisher__name=dataset["publisher_name"],
             upstream_id=dataset["upstream_id"],
             defaults=ds_values,
         )
+        if created:
+            ingestion_stats["created"] += 1
 
         for file_json in dataset["files"]:
             ds_file, _ = DataSetFile.objects.get_or_create(
@@ -194,9 +214,13 @@ def ingest_to_db(name: str):
 
         incoming_ds_ids.add(dataset["upstream_id"])
 
+    deleted_ds_ids = list(db_entries_ids - incoming_ds_ids)
     print("(Would be) Deleted record upstream_ids:")
-    for id in list(db_entries_ids - incoming_ds_ids):
+    for id in deleted_ds_ids:
         print(id)
+    ingestion_stats["deleted"] = len(deleted_ds_ids)
+
+    return ingestion_stats
 
 
 def load_incoming_ds(name: str):
