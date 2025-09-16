@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.db.models import Q
 from django.core.paginator import Paginator
-from .models import DataSet, Publisher
+from urllib.parse import urlparse
+from .models import DataSet, Publisher, Region, DataSetFile
 
 
 def index(request):
@@ -40,53 +41,91 @@ def index(request):
 
 
 def search(request):
-    # currently doing single keyword search
-    # plan to implement
-    # multiword query
-    # will require string processing probably
-    # want to think about relevance and ordering of results
-    # filtering for region, time, publisher type, publisher, file type
+    qd = request.GET.lists()
+    print(qd)
 
-    query = request.GET.get("query", "test")
+    # query = request.GET.get("query", "")/
 
-    # region = request.GET.get()
-    # file_type = request.GET.get()
-    # publisher_kind = request.GET.get()
-    # publisher = request.GET.get()
-    # last_updated = request.GET.get()
-    # quality_score = request.GET.get()
-    # separate thing, exclude = request.GET.get()
+    result_dsets = DataSet.objects.all()
 
-    dsets = DataSet.objects.all()
+    # if query:
+    #     result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    #     display_dsets = list(result_dsets)
+
+    for k, v in qd:
+        if k == "query":
+            result_dsets = result_dsets.filter(
+                Q(name__icontains=v[0]) | Q(description__icontains=v[0])
+            )
+        elif k == "PublisherName" and v[0]:
+            pid = Publisher.objects.get(name__icontains=v[0]).id
+            result_dsets = result_dsets.filter(publisherid=pid)
+        elif k == "pubtype":
+            q = Q()
+            for pt in v:
+                print("pt", pt)
+                q |= Q(kind=pt)
+                print("Q", q)
+            pubids = list(Publisher.objects.filter(q).values_list("id", flat=True).distinct())
+            print(pubids)
+            q = Q()
+            for id in pubids:
+                q |= Q(publisher_id=id)
+            result_dsets = result_dsets.filter(q)
+        elif k == "region":
+            regionids = [Region.objects.get(country_code=r).id for r in v]
+            q = Q()
+            for id in regionids:
+                q |= Q(region_id=id)
+            result_dsets = result_dsets.filter(q)
+        elif k == "filetype":
+            continue
+        else:
+            continue
+
+    display_dsets = list(result_dsets)
+    n_results = result_dsets.count()
+
     limit = int(request.GET.get("limit", 11))
 
-    if query:
-        result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
-        display_dsets = list(result_dsets)
-        n_results = result_dsets.count()
+    # if query:
+    #     result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    #     display_dsets = list(result_dsets)
+    #     n_results = result_dsets.count()
 
-    paginator = Paginator(display_dsets, limit)  # default 11 contacts per page
-
+    paginator = Paginator(display_dsets, limit)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    geoids = list(result_dsets.values_list("region", flat=True).distinct())
+
+    geographies = []
+    for id in geoids:
+        geographies.append(Region.objects.get(id=id).country_code)
+    geographies = sorted(geographies)
+
+    ftypes = list(DataSetFile.objects.values_list("file_type", flat=True).distinct())
+    ftypes = sorted(ftypes)
+
+    print(request.get_full_path())
+
+    # feel like I could be using urlparse in here somehow
+    uri = request.get_full_path()
+    if "page" in uri:
+        index = uri.find("page")
+        print(index)
+        uri = uri[: index - 1]
+    print(uri)
+    print(request.get_full_path())
+
     context = {
-        "keyword": query,
+        "keyword": request.GET.get("query", ""),
         "search_results": display_dsets,
         "n_results": n_results,
         "page": page_obj,
+        "geographies": geographies,
+        "filetypes": ftypes,
+        "uri": uri,
     }
 
     return render(request, "search.html", context)
-
-
-# powerset of a query phrase
-# group by # of words
-# remove stopwords from 2s and 1s
-# prioritize results that match longer phrases
-# turn to lists and staple together accordingly
-
-# ask about postgres sql full text search
-
-# collapsible, with sections and then checkboxes, checkboxes will create query
-## parameters to filter search
