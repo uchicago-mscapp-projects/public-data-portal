@@ -12,7 +12,7 @@ class PublisherKind(models.TextChoices):
 
 # NOTE: keep sorted & in sync with ingestion.data_models
 class FileType(models.TextChoices):
-    CSV = "csv", _("Comma-Separated Values")
+    CSV = "csv", _("CSV")
     FGDB = "fgdb/gdb", _("File Geodatabase")
     GEOJSON = "geojson", _("GeoJSON")
     JSON = "json", _("JSON Object")
@@ -44,6 +44,7 @@ class TimePeriod(models.TextChoices):
 class Publisher(models.Model):
     name = models.TextField()
     kind = models.CharField(max_length=2, choices=PublisherKind)
+
     url = models.URLField()
     mirror = models.BooleanField(default=False)
 
@@ -192,6 +193,13 @@ class DataSetFile(models.Model):
     last_mirrored = models.DateTimeField(null=True)
     file_type = models.CharField(choices=FileType)
     file_size_mb = models.IntegerField()  # file size in megabytes
+
+    def file_type_and_size(self):
+        """if size is 0, omit"""
+        if self.file_size_mb:
+            return f"{self.dataset.name} File: {self.file_type}, {self.file_size_mb} MB"
+        else:
+            return f"{self.dataset.name} File: {self.file_type}"
 
     def __str__(self):
         return f"{self.dataset.name} File: {self.file_type}, {self.file_size_mb} MB"
