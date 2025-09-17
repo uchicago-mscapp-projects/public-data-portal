@@ -226,18 +226,18 @@ class IngestionRecord(models.Model):
 
     # start timing when ingestion record is created
     run_start = models.DateTimeField(auto_now_add=True)
-    run_finish = models.DateTimeField()
+    run_finish = models.DateTimeField(null=True, blank=True)
 
     # fields from command call
-    ingest_only = models.BooleanField()
-    cleardb = models.BooleanField()
+    ingest_only = models.BooleanField(default=False)
+    cleardb = models.BooleanField(default=False)
 
     # name of scraper
     scraper = models.CharField(max_length=100)
 
     # outcome / exception
-    status = models.CharField(max_length=10, choices=IngestionRunStatus)
-    status_message = models.TextField()
+    status = models.CharField(max_length=10, choices=IngestionRunStatus, null=True, blank=True)
+    status_message = models.TextField(null=True, blank=True)
 
     # stats on ingestion:
     # from get_or_create in ingest_to_db - bundle into dictionary

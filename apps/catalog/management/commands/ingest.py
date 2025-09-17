@@ -16,6 +16,7 @@ from apps.catalog.models import (
     DataSetFile,
     IdentifierKind,
     IngestionRecord,
+    IngestionRunStatus,
 )
 from functools import cache
 
@@ -25,10 +26,8 @@ app = Typer()
 
 @app.command()
 def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
-    ingest_record = IngestionRecord()
-    ingest_record.scraper = name
-    ingest_record.cleardb = cleardb
-    ingest_record.ingest_only = ingestonly
+    ingest_record = IngestionRecord.objects.create(scraper=name, cleardb=cleardb, ingest_only=ingestonly)
+    print(f"record object: {ingest_record}, scraper: {ingest_record.scraper}, cleardb? {ingest_record.cleardb}, ingest only? {ingest_record.ingest_only}")
 
     if cleardb:
         clear_db(name)
@@ -39,6 +38,8 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
         # 1) (preferred) list_datasets returns partial datasets
         #    which are then hydrated by get_dataset_details
         # 2) get_full_datasets returns fully-hydrated data sets
+
+        # try except block around this for scraper check?
         try:
             mod = importlib.import_module(f"ingestion.{name}")
 
@@ -71,11 +72,18 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
             save_to_json(details, name)
 
     # ingest_to_db(name)
-    ingestion_stats = ingest_to_db(name)
-    ingest_record.run_finish = datetime.now()
-    ingest_record.existing, ingest_record.incoming, ingest_record.created, ingest_record.deleted = (
-        ingestion_stats
-    )
+    try:
+        ingestion_stats = ingest_to_db(name)
+        ingest_record.run_finish = datetime.now()
+        ingest_record.existing, ingest_record.incoming, ingest_record.created, ingest_record.deleted = (
+            ingestion_stats
+        )
+    except Exception as e:
+        ingest_record.status = IngestionRunStatus.DB_WRITE_FAILURE
+        ingest_record.status_message = f"{type(e)}: {str(e)}"
+        print(f"{type(e)}: {str(e)}")
+        ingest_record.run_finish = datetime.datetime.now()
+        raise
 
 
 def clear_db(name: str):

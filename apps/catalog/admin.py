@@ -102,6 +102,15 @@ class CuratedCollectionAdmin(admin.ModelAdmin):
 admin.site.register(CuratedCollection, CuratedCollectionAdmin)
 
 class IngestionRecordAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = ("run_start", "scraper", "cleardb", "ingest_only")
+    fields = [
+        "status",
+        "status_message",
+        "run_finish",
+        "existing",
+        "incoming",
+        "created", 
+        "deleted",
+    ]
 
 admin.site.register(IngestionRecord, IngestionRecordAdmin)
