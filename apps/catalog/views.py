@@ -66,32 +66,33 @@ def dataset_detail(request, dataset_id):
 
 
 def search(request):
-    qd = request.GET.lists()
-    print(qd)
+    #creates list of tuples like [(param, [value1, value2, value3]), (param, [value1])]
+    querydict = request.GET.lists()
 
     # outstanding issues
-    # multiword search
-    # should search funnel?
-    # trying to connect datasets to filetypes
+    # multiword search donesies
+    # should search funnel? no, donesies
+    # trying to connect datasets to filetypes see picture
     # clear button
-    # advsearch currently resets, handle like searchbar
-    # page display
-    # defaults to showing all datasets if hit search page without query
+    # advsearch currently resets, handle like searchbar, inputs...
+    # page display, do whatever is easy
+    # defaults to showing all datasets if hit search page without query, yeah just fix thing
+    #get tags when they're ready
 
+    #default to show all datasets if no search criteria
     result_dsets = DataSet.objects.all()
 
-    # if query:
-    #     result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    #     display_dsets = list(result_dsets)
-
-    for k, v in qd:
+    parameters = {}
+    for k, v in querydict:
         if k == "query":
             result_dsets = result_dsets.filter(
                 Q(name__icontains=v[0]) | Q(description__icontains=v[0])
             )
+            parameters[k] = v[0]
         elif k == "PublisherName" and v[0]:
-            pid = Publisher.objects.get(name__icontains=v[0]).id
-            result_dsets = result_dsets.filter(publisherid=pid)
+            pid = set(Publisher.objects.filter(name__icontains=v[0]).values_list("id", flat=True))
+            result_dsets = result_dsets.filter(publisher_id__in=pid)
+            parameters[k]=v[0]
         elif k == "pubtype":
             q = Q()
             for pt in v:
@@ -104,14 +105,18 @@ def search(request):
             for id in pubids:
                 q |= Q(publisher_id=id)
             result_dsets = result_dsets.filter(q)
+            parameters[k]=v
         elif k == "region":
             regionids = [Region.objects.get(country_code=r).id for r in v]
             q = Q()
             for id in regionids:
                 q |= Q(region_id=id)
             result_dsets = result_dsets.filter(q)
+            parameters[k]=v
         elif k == "filetype":
-            continue
+            dsetids = set(DataSetFile.objects.filter(file_type__in=v).values_list("dataset_id", flat=True))
+            result_dsets = result_dsets.filter(id__in=dsetids)
+            parameters[k]=v
         else:
             continue
 
@@ -120,35 +125,26 @@ def search(request):
 
     limit = int(request.GET.get("limit", 11))
 
-    # if query:
-    #     result_dsets = dsets.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    #     display_dsets = list(result_dsets)
-    #     n_results = result_dsets.count()
-
+    # handles pagination and returns uri so search params retained as page turns
     paginator = Paginator(display_dsets, limit)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    geoids = list(result_dsets.values_list("region", flat=True).distinct())
+    uri = request.get_full_path()
+    if "page" in uri:
+        index = uri.find("page")
+        uri = uri[: index - 1]
 
+    # list of potential regions to filter search with
+    geoids = list(DataSet.objects.values_list("region", flat=True).distinct())
     geographies = []
     for id in geoids:
         geographies.append(Region.objects.get(id=id).country_code)
     geographies = sorted(geographies)
 
+    # list of potential filetypes to filter search with
     ftypes = list(DataSetFile.objects.values_list("file_type", flat=True).distinct())
     ftypes = sorted(ftypes)
-
-    print(request.get_full_path())
-
-    # feel like I could be using urlparse in here somehow
-    uri = request.get_full_path()
-    if "page" in uri:
-        index = uri.find("page")
-        print(index)
-        uri = uri[: index - 1]
-    print(uri)
-    print(request.get_full_path())
 
     context = {
         "keyword": request.GET.get("query", ""),
@@ -158,6 +154,7 @@ def search(request):
         "geographies": geographies,
         "filetypes": ftypes,
         "uri": uri,
+        "parameters": parameters
     }
 
     return render(request, "search.html", context)

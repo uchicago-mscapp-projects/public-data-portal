@@ -10,7 +10,7 @@
     <form action="" method="get">
       <div class="field has-addons">
     <div class="control has-icons-left is-expanded">
-      <input class="input" type="text" placeholder="Search..." name="query" id="searchInput" value={{keyword}}>
+      <input class="input" type="text" placeholder="Search..." name="query" id="searchInput" value="{{keyword}}">
       <span class="icon is-small is-left">
         <i class="fas fa-search"></i> <!-- Font Awesome search icon -->
       </span>
@@ -50,21 +50,21 @@ GOV_NATIONAL = "gn", _("Government - National")
 </script>
 
 <div class="block">
-<button id="advsearchtrigger" class="button is-light" type="button">Advanced Search</button>
+<button id="advsearchtrigger" class="button is-primary" type="button">Advanced Search</button>
 <div id="advsearchpanel" class=box style="display: none;">
     <form action="" method="get">
       <!-- <h2>Advanced Search</h2> -->
        <input id="advsearchInput" name="query" type="hidden" value={{keyword}}>
         <div class="columns">
             <div class="column">
-            <div class="block">
-            <label>Publisher Name:</label>
-            <input class="input" type="text" placeholder="Publisher Name..." name="PublisherName" id="PublisherName">
-            </div>
-            <div class="block">
-            <label>Collection Name:</label>
-            <input class="input" type="text" placeholder="Collection Name..." name="CollectionName" id="CollectionName">
-            </div>
+                <div class="block">
+                    <label>Publisher Name:</label>
+                    <input class="input" type="text" placeholder="Publisher Name..." name="PublisherName" id="PublisherName" value="{{ parameters.PublisherName }}">
+                </div>
+                <!-- <div class="block">
+                    <label>Collection Name:</label>
+                    <input class="input" type="text" placeholder="Collection Name..." name="CollectionName" id="CollectionName">
+                </div> -->
             </div>
             <div class="column">
                 <fieldset>
@@ -111,7 +111,7 @@ GOV_NATIONAL = "gn", _("Government - National")
             </div>
           <p>
         <div class="adv-submit">
-        <input class="button is-light is-small" type="button" value="Clear">
+        <input class="button is-primary is-small" type="button" value="Clear">
         <input class="button is-info is-small" type="submit" value="Search">
         </div>
       </p>
