@@ -69,14 +69,29 @@ GOV_NATIONAL = "gn", _("Government - National")
             <div class="column">
                 <fieldset>
                   <p>
-                    <label for="region">Publisher Type:</label>
+                    <label for="pubtype">Publisher Type:</label>
                     <div class="select is-multiple">
                     <select name="pubtype" id="pubtype" multiple size="5">
-                        <option value="gn">National Government</option>
-                        <option value="gs">State or Regional Government</option>
-                        <option value="gl">Local Government</option>
-                        <option value="ng">Non-Governmental Organization</option>
-                        <option value="ac">Academic</option>
+                        <option value="gn"
+                            {% if gn in parameters.pubtype %}
+                            selected {%endif%}>National Government
+                        </option>
+                        <option value="gs"
+                            {% if gs in parameters.pubtype %}
+                            selected {%endif%}>State or Regional Government
+                        </option>
+                        <option value="gl"
+                            {% if gl in parameters.pubtype %}
+                            selected {%endif%}>Local Government
+                        </option>
+                        <option value="ng"
+                            {% if ng in parameters.pubtype %}
+                            selected {%endif%}>Non-Governmental Organization
+                        </option>
+                        <option value="ac"
+                            {% if ac in parameters.pubtype %}
+                            selected {%endif%}>Academic
+                        </option>
                     </select>
                   </p>
                 </fieldset>
@@ -88,7 +103,10 @@ GOV_NATIONAL = "gn", _("Government - National")
                     <div class="select is-multiple">
                     <select name="region" id="region" multiple size="4">
                     {% for geo in geographies %}
-                        <option value={{geo}}>{{geo}}</option>
+                        <option value={{geo}}
+                            {% if geo in parameters.region %}
+                            selected {%endif%}>{{geo}}
+                        </option>
                     {% endfor %}
                     </select>
                 </p>
@@ -101,7 +119,10 @@ GOV_NATIONAL = "gn", _("Government - National")
                 <div class="select is-multiple">
                 <select name="filetype" id="filetype" multiple size="4">
                     {% for type in filetypes %}
-                        <option value={{type}}>{{type}}</option>
+                        <option value={{type}}
+                            {% if type in parameters.filetype %}
+                            selected {%endif%}>{{type}}
+                        </option>
                     {% endfor %}
                 </select>
                 </div>
@@ -111,7 +132,7 @@ GOV_NATIONAL = "gn", _("Government - National")
             </div>
           <p>
         <div class="adv-submit">
-        <input class="button is-primary is-small" type="button" value="Clear">
+        <input class="button is-primary is-small" type="reset" value="Clear">
         <input class="button is-info is-small" type="submit" value="Search">
         </div>
       </p>
