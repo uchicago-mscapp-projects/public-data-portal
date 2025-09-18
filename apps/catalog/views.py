@@ -72,12 +72,14 @@ def search(request):
     # outstanding issues
     # multiword search donesies
     # should search funnel? no, donesies
-    # trying to connect datasets to filetypes see picture
-    # clear button
-    # advsearch currently resets, handle like searchbar, inputs...
-    # page display, do whatever is easy
-    # defaults to showing all datasets if hit search page without query, yeah just fix thing
+    # trying to connect datasets to filetypes see picture donesies
+    # clear button hmmm
+    # advsearch currently resets, handle like searchbar, inputs... donesies maybe
+    # page display, do whatever is easy scroll was disabled
+    # defaults to showing all datasets if hit search page without query, yeah just fix thing outstanding
     #get tags when they're ready
+    #sort
+    #weird thing with pubtype
 
     #default to show all datasets if no search criteria
     result_dsets = DataSet.objects.all()
