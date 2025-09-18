@@ -191,6 +191,13 @@ def ingest_to_db(name: str):
                     "file_size_mb": file_json["file_size_mb"],
                 },
             )
+        
+        for tag in dataset["tags"]:
+            # add a model for tags
+            # convert to lowercase
+            # get or create tag object
+            # OR could do this in a very stupid way temporarily
+            pass
 
         incoming_ds_ids.add(dataset["upstream_id"])
 
