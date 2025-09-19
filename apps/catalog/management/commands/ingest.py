@@ -41,35 +41,43 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
 
         # try except block around this for scraper check?
         try:
-            mod = importlib.import_module(f"ingestion.{name}")
+            try:
+                mod = importlib.import_module(f"ingestion.{name}")
 
-            if not hasattr(mod, "list_datasets") or not hasattr(mod, "get_dataset_details"):
-                # will raise AttributError if none of the 3 are found
-                get_full_datasets = mod.get_full_datasets
-            else:
-                # combine the two here for now, better logic TBD
-                def get_full_datasets():
-                    for pd in mod.list_datasets():
-                        print(pd)
-                        yield mod.get_dataset_details(pd)
+                if not hasattr(mod, "list_datasets") or not hasattr(mod, "get_dataset_details"):
+                    # will raise AttributError if none of the 3 are found
+                    get_full_datasets = mod.get_full_datasets
+                else:
+                    # combine the two here for now, better logic TBD
+                    def get_full_datasets():
+                        for pd in mod.list_datasets():
+                            print(pd)
+                            yield mod.get_dataset_details(pd)
 
-        except ImportError as e:
-            self.secho(f"Could not import: {e}", fg="red")
-            return
-        except AttributeError:
-            self.secho("""Module did not contain
-                       list_datasets/get_dataset_details or get_full_datasets""")
+            except ImportError as e:
+                self.secho(f"Could not import: {e}", fg="red")
+                return
+            except AttributeError:
+                self.secho("""Module did not contain
+                        list_datasets/get_dataset_details or get_full_datasets""")
 
-        prep_dir(name)
+            prep_dir(name)
 
-        self.secho(f"Running ingestion.{name}", fg="blue")
+            self.secho(f"Running ingestion.{name}", fg="blue")
 
-        for details in get_full_datasets():
-            logger.info("details", detail=details)
-            # TODO: this should save the datasets to disk & then import them
-            if details is None:
-                continue
-            save_to_json(details, name)
+            for details in get_full_datasets():
+                logger.info("details", detail=details)
+                # TODO: this should save the datasets to disk & then import them
+                if details is None:
+                    continue
+                save_to_json(details, name)
+
+        except Exception as e:
+            ingest_record.status = IngestionRunStatus.SCRAPER_FAILURE
+            ingest_record.status_message = f"{type(e)}: {str(e)}"
+            ingest_record.run_finish = datetime.datetime.now()
+            print(f"{type(e)}: {str(e)}")
+            raise
 
     # ingest_to_db(name)
     try:
@@ -78,11 +86,12 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
         ingest_record.existing, ingest_record.incoming, ingest_record.created, ingest_record.deleted = (
             ingestion_stats
         )
+        ingest_record.status = IngestionRunStatus.SUCCESS
     except Exception as e:
         ingest_record.status = IngestionRunStatus.DB_WRITE_FAILURE
         ingest_record.status_message = f"{type(e)}: {str(e)}"
-        print(f"{type(e)}: {str(e)}")
         ingest_record.run_finish = datetime.datetime.now()
+        print(f"{type(e)}: {str(e)}")
         raise
 
 

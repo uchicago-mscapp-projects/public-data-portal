@@ -245,3 +245,6 @@ class IngestionRecord(models.Model):
     incoming = models.IntegerField(default=0)
     created = models.IntegerField(default=0)
     deleted = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.scraper} run at {self.run_start} until {self.run_finish}: {self.status} - {self.status_message}"
