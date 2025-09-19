@@ -200,23 +200,25 @@ def ingest_to_db(name: str):
             "upstream_upload_time": dataset["upstream_upload_time"],
             "start_date": dataset["start_date"],
             "end_date": dataset["end_date"],
-            "publisher": publisher,
             "region": region,
             "source_url": dataset["source_url"],
             "upstream_id": dataset["upstream_id"],
             "license": dataset["license"],
             "quality_score": -1,
             "scraper": name,
-            "identifier_kinds": identifier_kinds,
         }
 
         ds_obj, created = DataSet.objects.update_or_create(
-            publisher__name=dataset["publisher_name"],
+            publisher=publisher,
             upstream_id=dataset["upstream_id"],
             defaults=ds_values,
         )
         if created:
             ingestion_stats["created"] += 1
+
+        # set IdentifierKinds
+        if identifier_kinds:
+            ds_obj.identifier_kinds.set(identifier_kinds)
 
         for file_json in dataset["files"]:
             ds_file, _ = DataSetFile.objects.get_or_create(
