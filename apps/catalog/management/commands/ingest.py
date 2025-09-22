@@ -82,7 +82,7 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
     # ingest_to_db(name)
     try:
         ingestion_stats = ingest_to_db(name)
-        ingest_record.run_finish = datetime.now()
+        ingest_record.run_finish = datetime.datetime.now()
         ingest_record.existing, ingest_record.incoming, ingest_record.created, ingest_record.deleted = (
             ingestion_stats
         )
