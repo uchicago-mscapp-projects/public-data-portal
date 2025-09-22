@@ -7,9 +7,8 @@ from apps.catalog import views as cat_views
 urlpatterns = [
     path("djadmin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
-    # maps the default "/" URL to our index page
-    path("", cat_views.index),
-    path("search/", cat_views.search),
+    path("", cat_views.homepage),
+    path("search/", cat_views.search, name="search"),
     path("about/", cat_views.about),
     path("random/", cat_views.random_dataset),
     path("dataset/<int:dataset_id>/", cat_views.dataset_detail, name="dataset-detail"),

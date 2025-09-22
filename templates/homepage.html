@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Public Data Portal
+{% endblock %}
+
+{% block content %}
+
+<div class="block" id="search box">
+    <form action="{% url 'search' %}" method="get">
+        <div class="field has-addons">
+            <div class="control has-icons-left is-expanded">
+                <input class="input" type="text" placeholder="Search..." name="query" id="searchInput" value={{keyword}}>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-search"></i> <!-- Font Awesome search icon -->
+                </span>
+            </div>
+            <div class="control">
+                <button class="button is-info" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div id="greeting">
+            <h2>Hello {{ name }}! Our site currently hosts...</h2>
+        </div>
+
+        <div class="stat-box">
+            <h3 class="title">{{ num_datasets }}</h3>
+            <span class="subtitle"> datasets</span>
+        </div>
+
+        <div class="stat-box">
+            <h3 class="title">{{ num_publishers }}</h3>
+            <span class="subtitle"> publishers</span>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <h3 class="title">Recent Datasets</h3>
+                {% for dset in recent_datasets %}
+                <div class="box">
+                    <p>
+                        <b>
+                            <a href="{% url 'dataset-detail' dset.id %}">{{ dset.name }}</a>
+                        </b>
+                    </p>
+                    <p>Last updated: {{ dset.upstream_upload_time|date:"F j, Y, g:i a" }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="column">
+                <h3 class="title">Featured Publishers</h3>
+                {% for pub in featured_publishers %}
+                <div class="box">
+                    <p>
+                        <b>
+                            <a href="{{ pub.url }}">{{ pub.name }}</a>
+                        </b>
+                    </p>
+                    <p>Kind: {{ pub.kind }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

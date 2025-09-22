@@ -40,6 +40,19 @@ def index(request):
     return render(request, "index.html", context)
 
 
+def homepage(request):
+    context = {
+        "recent_datasets": DataSet.objects.all().order_by("-upstream_upload_time")[:10],
+        "featured_publishers": Publisher.objects.all()[:10],
+        "num_datasets": DataSet.objects.count(),
+        "num_publishers": Publisher.objects.count(),
+    }
+
+    context["name"] = request.GET.get("name", "anonymous user")
+
+    return render(request, "homepage.html", context)
+
+
 def about(request):
     return render(request, "about.html", {})
 
