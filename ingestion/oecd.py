@@ -36,9 +36,10 @@ def retrieve_results_count():
 def list_datasets() -> Generator[PartialDataset, None, None]:
     """
     This method can either return a list or `yield` individual
-    items as they're found.
+    PartialDataset objects as they're found.
 
-    The version below demonstrates yielding items, but
+    The version below demonstrates yielding items, but returning all at once
+    would also work just fine.
     """
     page_count = retrieve_results_count() // 10
     for i in range(page_count + 1):
@@ -51,6 +52,13 @@ def list_datasets() -> Generator[PartialDataset, None, None]:
 
 
 def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
+    """
+    This method constructs scraped datasets in form of UpstreamDataset model
+    based on extracted values from url in PartialDataset input.
+
+    These UpstreamDataset objects are eventually used in ingest.py to save
+    individual OECD datasets to our actual application db.
+    """
     try:
         parsed_url = urlparse(pd.url)
         url_params = parse_qs(parsed_url.query)

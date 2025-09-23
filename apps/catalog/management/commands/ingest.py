@@ -23,6 +23,16 @@ app = Typer()
 
 @app.command()
 def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
+    """
+    Main code to be run whenever ingest command is called.
+
+    Runs specified scraper, saving data locally as json file(s) and then
+    iterating through each json for actual dataset creation in db.
+
+    Contains two optional flags:
+    cleardb: reset our existing db entries for scraper prior to ingestion
+    ingestonly: skip json creation and run ingestion with existing dir contents
+    """
     if cleardb:
         clear_db(name)
 
@@ -67,7 +77,11 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
 
 
 def clear_db(name: str):
-    """resets db for specified scraper for development testing"""
+    """
+    This method resets our db entries for the specified scraper.
+
+    To be used primarily for development testing.
+    """
     # if scraper dsets exist, delete them
     if DataSet.objects.filter(scraper=name).exists():
         DataSet.objects.filter(scraper=name).delete()
@@ -75,6 +89,9 @@ def clear_db(name: str):
 
 
 def set_dir_path(name: str):
+    """
+    Returns correct directory path for ingest json output for specified scraper.
+    """
     cwd = os.getcwd()
     dir_path = f"{cwd}/ingest_json/{name}"
     dir_path = os.path.normpath(dir_path)
@@ -83,6 +100,10 @@ def set_dir_path(name: str):
 
 
 def prep_dir(name: str):
+    """
+    Prepares scraper json directory for ingestion, checking that directory is
+    both present and empty before json creation and ingestion proceeds.
+    """
     dir_path = set_dir_path(name)
 
     # if directory already exists, empty for overwrite
@@ -96,6 +117,9 @@ def prep_dir(name: str):
 
 
 def save_to_json(updata: UpstreamDataset, name: str):
+    """
+    Saves scraped dataset info as json file(s) to corresponding scraper directory.
+    """
     dir_path = set_dir_path(name)
     file_path = os.path.join(dir_path, f"{updata.upstream_id}.json")
     json_upd = updata.model_dump_json()
@@ -108,6 +132,12 @@ def save_to_json(updata: UpstreamDataset, name: str):
 
 
 def empty_dir(name: str):
+    """
+    Empties scraper json directory of all existing json files.
+
+    Necessary when leftover json exist for previous ingestion attempt as part
+    of preparation for new, clean slate ingestion.
+    """
     if name == "" or ".." in name:
         raise ValueError("Invalid Directory: Potentially Unsafe Filepath")
 
@@ -123,6 +153,12 @@ def empty_dir(name: str):
 
 
 def ingest_to_db(name: str):
+    """
+    Runs actual ingestion of dataset info to our db.
+
+    Parses through ingest json file(s) created from specified scraper,
+    creating dataset object for each in db.
+    """
     incoming_datasets = load_incoming_ds(name)
     incoming_ds_ids = set()
 
@@ -202,6 +238,9 @@ def ingest_to_db(name: str):
 
 
 def load_incoming_ds(name: str):
+    """
+    Returns unified list of json data for specified scraper.
+    """
     file_path = os.path.join(set_dir_path(name), "*.json")
     json_files = glob.glob(file_path)
     incoming_datasets = []
@@ -216,6 +255,10 @@ def load_incoming_ds(name: str):
 
 @cache
 def get_identifier_kind(kind: str) -> IdentifierKind:
+    """
+    Retrieves corresponding IdentifierKind object from db given input 'kind'
+    str value.
+    """
     # use filter() to allow for None return obj vs. get() which raises exception
     identifier_kind = IdentifierKind.objects.filter(kind=kind).first()
     return identifier_kind
