@@ -4,6 +4,7 @@ import os
 import shutil
 import json
 import glob
+import datetime
 from django_typer.management import Typer
 from ingestion.utils import logger
 from ingestion.data_models import UpstreamDataset
@@ -14,6 +15,8 @@ from apps.catalog.models import (
     Region,
     DataSetFile,
     IdentifierKind,
+    IngestionRecord,
+    IngestionRunStatus,
 )
 from functools import cache
 
@@ -23,6 +26,9 @@ app = Typer()
 
 @app.command()
 def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
+    ingest_record = IngestionRecord.objects.create(scraper=name, cleardb=cleardb, ingest_only=ingestonly)
+    print(f"record object: {ingest_record}, scraper: {ingest_record.scraper}, cleardb? {ingest_record.cleardb}, ingest only? {ingest_record.ingest_only}")
+
     if cleardb:
         clear_db(name)
 
@@ -32,38 +38,61 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
         # 1) (preferred) list_datasets returns partial datasets
         #    which are then hydrated by get_dataset_details
         # 2) get_full_datasets returns fully-hydrated data sets
+
+        # try except block around this for scraper check?
         try:
-            mod = importlib.import_module(f"ingestion.{name}")
+            try:
+                mod = importlib.import_module(f"ingestion.{name}")
 
-            if not hasattr(mod, "list_datasets") or not hasattr(mod, "get_dataset_details"):
-                # will raise AttributError if none of the 3 are found
-                get_full_datasets = mod.get_full_datasets
-            else:
-                # combine the two here for now, better logic TBD
-                def get_full_datasets():
-                    for pd in mod.list_datasets():
-                        print(pd)
-                        yield mod.get_dataset_details(pd)
+                if not hasattr(mod, "list_datasets") or not hasattr(mod, "get_dataset_details"):
+                    # will raise AttributError if none of the 3 are found
+                    get_full_datasets = mod.get_full_datasets
+                else:
+                    # combine the two here for now, better logic TBD
+                    def get_full_datasets():
+                        for pd in mod.list_datasets():
+                            print(pd)
+                            yield mod.get_dataset_details(pd)
 
-        except ImportError as e:
-            self.secho(f"Could not import: {e}", fg="red")
-            return
-        except AttributeError:
-            self.secho("""Module did not contain
-                       list_datasets/get_dataset_details or get_full_datasets""")
+            except ImportError as e:
+                self.secho(f"Could not import: {e}", fg="red")
+                return
+            except AttributeError:
+                self.secho("""Module did not contain
+                        list_datasets/get_dataset_details or get_full_datasets""")
 
-        prep_dir(name)
+            prep_dir(name)
 
-        self.secho(f"Running ingestion.{name}", fg="blue")
+            self.secho(f"Running ingestion.{name}", fg="blue")
 
-        for details in get_full_datasets():
-            logger.info("details", detail=details)
-            # TODO: this should save the datasets to disk & then import them
-            if details is None:
-                continue
-            save_to_json(details, name)
+            for details in get_full_datasets():
+                logger.info("details", detail=details)
+                # TODO: this should save the datasets to disk & then import them
+                if details is None:
+                    continue
+                save_to_json(details, name)
 
-    ingest_to_db(name)
+        except Exception as e:
+            ingest_record.status = IngestionRunStatus.SCRAPER_FAILURE
+            ingest_record.status_message = f"{type(e)}: {str(e)}"
+            ingest_record.run_finish = datetime.datetime.now()
+            print(f"{type(e)}: {str(e)}")
+            raise
+
+    # ingest_to_db(name)
+    try:
+        ingestion_stats = ingest_to_db(name)
+        ingest_record.run_finish = datetime.datetime.now()
+        ingest_record.existing, ingest_record.incoming, ingest_record.created, ingest_record.deleted = (
+            ingestion_stats
+        )
+        ingest_record.status = IngestionRunStatus.SUCCESS
+    except Exception as e:
+        ingest_record.status = IngestionRunStatus.DB_WRITE_FAILURE
+        ingest_record.status_message = f"{type(e)}: {str(e)}"
+        ingest_record.run_finish = datetime.datetime.now()
+        print(f"{type(e)}: {str(e)}")
+        raise
 
 
 def clear_db(name: str):
@@ -130,6 +159,12 @@ def ingest_to_db(name: str):
     db_entries = DataSet.objects.filter(scraper=name)
     db_entries_ids = set(db_entries.values_list("upstream_id", flat=True))
 
+    # create dictionary
+    ingestion_stats = {}
+    ingestion_stats["incoming"] = len(incoming_datasets)
+    ingestion_stats["existing"] = len(db_entries)
+    ingestion_stats["created"] = 0
+
     for dataset in incoming_datasets:
         # retrieve/create corresponding publisher obj for dataset in db
         publisher, _ = Publisher.objects.get_or_create(
@@ -173,11 +208,13 @@ def ingest_to_db(name: str):
             "scraper": name,
         }
 
-        ds_obj, _ = DataSet.objects.update_or_create(
+        ds_obj, created = DataSet.objects.update_or_create(
             publisher=publisher,
             upstream_id=dataset["upstream_id"],
             defaults=ds_values,
         )
+        if created:
+            ingestion_stats["created"] += 1
 
         # set IdentifierKinds
         if identifier_kinds:
@@ -196,9 +233,13 @@ def ingest_to_db(name: str):
 
         incoming_ds_ids.add(dataset["upstream_id"])
 
+    deleted_ds_ids = list(db_entries_ids - incoming_ds_ids)
     print("(Would be) Deleted record upstream_ids:")
-    for id in list(db_entries_ids - incoming_ds_ids):
+    for id in deleted_ds_ids:
         print(id)
+    ingestion_stats["deleted"] = len(deleted_ds_ids)
+
+    return ingestion_stats
 
 
 def load_incoming_ds(name: str):
