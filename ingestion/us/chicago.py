@@ -14,7 +14,7 @@ CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false
 ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
 
 # ids that are known to have errors
-KNOWN_BAD = ("uwhj-p95a",)
+KNOWN_BAD = ("uwhj-p95a", "6mep-ry2s")
 
 
 def extract_updata(catalog):
