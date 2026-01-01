@@ -163,7 +163,7 @@ class DataSet(models.Model):
         related_name="datasets",
     )
     curated_collections = models.ManyToManyField(
-        CuratedCollection, null=True, blank=True, related_name="datasets"
+        CuratedCollection, blank=True, related_name="datasets"
     )
     quality_score = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -171,7 +171,7 @@ class DataSet(models.Model):
     scraper = models.TextField(null=True)
 
     identifier_kinds = models.ManyToManyField(
-        IdentifierKind, null=True, blank=True, related_name="datasets"
+        IdentifierKind, blank=True, related_name="datasets"
     )
 
     def __str__(self):
