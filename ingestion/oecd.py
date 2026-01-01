@@ -67,7 +67,10 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
 
     header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
     name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
-    name_fr = header_elem.xpath('.//common:Name[@xml:lang="fr"]/text()', namespaces=ns)[0]
+    try:
+        name_fr = header_elem.xpath('.//common:Name[@xml:lang="fr"]/text()', namespaces=ns)[0]
+    except IndexError:
+        name_fr = ""
 
     desc_html_en_lst = header_elem.xpath(
         './/common:Description[@xml:lang="en"]/text()', namespaces=ns
