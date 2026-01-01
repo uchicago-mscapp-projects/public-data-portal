@@ -170,9 +170,7 @@ class DataSet(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     scraper = models.TextField(null=True)
 
-    identifier_kinds = models.ManyToManyField(
-        IdentifierKind, blank=True, related_name="datasets"
-    )
+    identifier_kinds = models.ManyToManyField(IdentifierKind, blank=True, related_name="datasets")
 
     def __str__(self):
         return f"{self.name}: {self.start_date}-{self.end_date}"
