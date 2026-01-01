@@ -38,7 +38,7 @@ if DEBUG:
 else:
     SECRET_KEY = env.str("SECRET_KEY")
     _DEFAULT_DB = env.db()
-    if "postgres" in _DEFAULT_DB["engine"]:
+    if "postgres" in _DEFAULT_DB["ENGINE"]:
         _DEFAULT_DB["OPTIONS"] = {"pool": True}
     EMAIL_CONFIG = env.email()
     CONN_MAX_AGE = 600
