@@ -1,4 +1,5 @@
 from typing import Generator
+from httpx import HTTPStatusError
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset, AltStr
 from ingestion.utils import make_request, logger
@@ -62,7 +63,11 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         logger.warning("missing required query params", url=pd.url)
         return None
 
-    resp = make_request(DATASET_URL.format(df_ag, df_id), headers=headers)
+    try:
+        resp = make_request(DATASET_URL.format(df_ag, df_id), headers=headers)
+    except HTTPStatusError:
+        logger.warning("skipping 404")
+        return None
     root = lxml.etree.fromstring(resp.content)
 
     header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
