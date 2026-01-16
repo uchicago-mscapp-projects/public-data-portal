@@ -204,3 +204,45 @@ class DataSetFile(models.Model):
 
 
 # class GeoProjection(?)
+
+"""
+TO DO: data models for ingestion
+"""
+
+
+class IngestionRunStatus(models.TextChoices):
+    SUCCESS = "s", _("Success")
+    SCRAPER_FAILURE = "fs", _("Failed: scraper failure")
+    # JSON_FAILURE = "fj", _("Import failed - JSON write failure")
+    DB_WRITE_FAILURE = "fd", _("Failed: write to database failure")
+
+
+class IngestionRecord(models.Model):
+    """
+    Record of ingest.py run.
+    """
+
+    # start timing when ingestion record is created
+    run_start = models.DateTimeField(auto_now_add=True)
+    run_finish = models.DateTimeField(null=True, blank=True)
+
+    # fields from command call
+    ingest_only = models.BooleanField(default=False)
+    cleardb = models.BooleanField(default=False)
+
+    # name of scraper
+    scraper = models.CharField(max_length=100)
+
+    # outcome / exception
+    status = models.CharField(max_length=10, choices=IngestionRunStatus, null=True, blank=True)
+    status_message = models.TextField(null=True, blank=True)
+
+    # stats on ingestion:
+    # from get_or_create in ingest_to_db - bundle into dictionary
+    existing = models.IntegerField(default=0)
+    incoming = models.IntegerField(default=0)
+    created = models.IntegerField(default=0)
+    deleted = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.scraper} run at {self.run_start} until {self.run_finish}: {self.status} - {self.status_message}"
