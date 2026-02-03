@@ -24,7 +24,7 @@ ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
 KNOWN_BAD = ("uwhj-p95a", "6mep-ry2s")
 
 
-def extract_updata(catalog):
+def extract_datasets(catalog):
     """takes catalog page of 100 datasets, returns list of upstream datasets"""
     upstream_lst = []
 
@@ -100,8 +100,11 @@ def get_full_datasets():
         url = CATALOG.format(str(offset))
         resp = make_request(url)
         cat = json.loads(resp.text)
-        updata = extract_updata(cat)
-        upstream_lst.extend(updata)
+        new_sets = extract_datasets(cat)
+        if not new_sets:
+            break
+        upstream_lst.extend(new_sets)
         offset += 100
+        print("OFFSET", offset)
 
     return upstream_lst

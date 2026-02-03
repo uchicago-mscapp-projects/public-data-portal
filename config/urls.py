@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-from debug_toolbar.toolbar import debug_toolbar_urls
 from apps.catalog import views as cat_views
 
 urlpatterns = [
@@ -15,4 +14,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG and not settings.IS_TESTING:
+    from debug_toolbar.toolbar import debug_toolbar_urls
     urlpatterns += debug_toolbar_urls()

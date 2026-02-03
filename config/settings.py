@@ -256,6 +256,10 @@ LOGGING = {
             "handlers": ["console", "flat_line_file", "json_file"],
             "level": "INFO",
         },
+        "careful": {
+            "handlers": ["console", "flat_line_file", "json_file"],
+            "level": "INFO",
+        },
         # Modify this to match the name of your application.
         # to configure different logging for your app vs. Django's
         # internals.
