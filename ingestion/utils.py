@@ -7,7 +7,7 @@ logger = structlog.get_logger("pdp.ingestion")
 
 _client = make_careful_client(
     requests_per_minute=30,
-    retry_attempts=2,
+    retry_attempts=1,
     retry_wait_seconds=10,
 )
 

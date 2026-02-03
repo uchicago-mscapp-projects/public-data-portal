@@ -1,7 +1,8 @@
 from dateutil.parser import parse as parse_date
 from ingestion.data_models import UpstreamDataset, PartialDataset
-from ingestion.utils import make_request
+from ingestion.utils import make_request, logger
 from time import sleep
+from httpx import HTTPStatusError
 import json
 
 """
@@ -9,7 +10,13 @@ Ingestion script for Socrata-based Chicago data portal.
 """
 
 # URL below pulls up 100 dataset records at preferred offset
-CATALOG = "https://data.cityofchicago.org/api/catalog/v1?explicitly_hidden=false&limit=100&offset={}&order=page_views_total&published=true&q=&search_context=data.cityofchicago.org&show_unsupported_data_federated_assets=false&tags=&approval_status=approved&audience=public"
+CATALOG = (
+    "https://data.cityofchicago.org/api/catalog/v1?"
+    "explicitly_hidden=false&limit=100&offset={}&order=page_views_total"
+    "&published=true&q=&search_context=data.cityofchicago.org"
+    "&show_unsupported_data_federated_assets=false&tags=&"
+    "approval_status=approved&audience=public"
+)
 # url for "download" purposes
 ODATA_URL = "https://data.cityofchicago.org/api/odata/v4/{}"
 
@@ -64,9 +71,15 @@ def extract_updata(catalog):
         )
         # check if odata link exists, use for download
         odata = ODATA_URL.format(uds.upstream_id)
-        if uds.upstream_id in KNOWN_BAD:
+        try:
+            resp = make_request(odata)
+        except HTTPStatusError as e:
+            logger.warning(f"error retrieving {odata}: {e}")
             continue
-        resp = make_request(odata)
+        except Exception as e:
+            logger.warning(f"error retrieving {odata}: {e}")
+            continue
+
         if resp.status_code == 200:
             download_url = odata
         # otherwise just link to portal page
@@ -75,28 +88,20 @@ def extract_updata(catalog):
         uds.add_file(url=download_url, file_type="csv")
         upstream_lst.append(uds)
 
-        return upstream_lst
+    return upstream_lst
 
 
 def get_full_datasets():
     """handles catalog pagination to return complete list of datasets"""
     offset = 0
-    url = CATALOG.format(str(offset))
-    resp = make_request(url)
-
-    cat = json.loads(resp.text)
-    n_results = cat["resultSetSize"]
     upstream_lst = []
 
-    # first json used offset zero, so loop iterates through *next* offsets
-    for offset in range(100, n_results, 100):
-        sleep(1)
-        updata = extract_updata(cat)
-        upstream_lst.extend(updata)
-
-        # loads new page from offset
+    while True:
         url = CATALOG.format(str(offset))
         resp = make_request(url)
         cat = json.loads(resp.text)
+        updata = extract_updata(cat)
+        upstream_lst.extend(updata)
+        offset += 100
 
     return upstream_lst

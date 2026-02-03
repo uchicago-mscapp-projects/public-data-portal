@@ -72,7 +72,7 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
         root = lxml.etree.fromstring(resp.content)
     # any kind of parse error
     except Exception as e:
-        logger.warning("skipping bad XML {}", e)
+        logger.warning(f"skipping bad XML {e}")
         return None
 
     header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
@@ -118,7 +118,7 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     download_url = DOWNLOAD_URL.format(df_ag, df_id)
     ds.add_file(download_url, file_type="csv")
 
-    time.sleep(5)  # avoid '429 Too Many Requests'
+    # time.sleep(5)  # avoid '429 Too Many Requests'
 
     return ds
 
