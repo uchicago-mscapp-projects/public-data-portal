@@ -68,7 +68,12 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     except HTTPStatusError:
         logger.warning("skipping 404")
         return None
-    root = lxml.etree.fromstring(resp.content)
+    try:
+        root = lxml.etree.fromstring(resp.content)
+    # any kind of parse error
+    except Exception as e:
+        logger.warning("skipping bad XML {}", e)
+        return None
 
     header_elem = root.xpath(f'//structure:Dataflow[@id="{df_id}"]', namespaces=ns)[0]
     name_en = header_elem.xpath('.//common:Name[@xml:lang="en"]/text()', namespaces=ns)[0]
