@@ -44,14 +44,14 @@ wheels = [
 
 [[package]]
 name = "careful"
-version = "0.3.1"
+version = "0.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8d/27/fcef56d523aa1c1308f67004a8ab6ef70a05651700ae20f3cc4e8cf77282/careful-0.3.1.tar.gz", hash = "sha256:afd68b98726ebbc820769404e054b1365542f2903599f7bca286092f922f6299", size = 19214, upload-time = "2026-02-03T06:30:35.226Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/28/42/834e7ff3a8136f7086bb96e60f87068c486882b70db17c1f28461d128dba/careful-0.3.2.tar.gz", hash = "sha256:aa78ebb34d09bff4b0f7f513cf60ddf79563819aa5ead64f54902ed835233568", size = 19590, upload-time = "2026-02-04T05:57:23.307Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/1a/770bfc664e131a20de17fb244bed355ba29cdf30a36906b54f8d2135c27c/careful-0.3.1-py3-none-any.whl", hash = "sha256:06aeaaeeb2cce3c224204bcc7a4726bbdbf7d86df2c501c350a4435c9750a99e", size = 11791, upload-time = "2026-02-03T06:30:34.366Z" },
+    { url = "https://files.pythonhosted.org/packages/43/09/8995e1a246d22ede5530a153f84b70a1afd351c70fbbbceccf007ef75dd2/careful-0.3.2-py3-none-any.whl", hash = "sha256:1ceeb67aea57464285fedda042ca914ccf2e0fac3bcffc6b202ecdd11797b11f", size = 12196, upload-time = "2026-02-04T05:57:24.088Z" },
 ]
 
 [[package]]
@@ -239,7 +239,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "careful", specifier = ">=0.3.1" },
+    { name = "careful", specifier = ">=0.3.2" },
     { name = "django", specifier = ">=5.2,<6" },
     { name = "django-allauth", extras = ["mfa"], specifier = ">=65.7.0" },
     { name = "django-debug-toolbar", specifier = ">=5.1.0" },
