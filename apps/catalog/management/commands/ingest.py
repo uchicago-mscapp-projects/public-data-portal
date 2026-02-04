@@ -142,7 +142,7 @@ def ingest_to_db(name: str):
 
         # retrieve/create corresponding region obj for dataset in db
         region, _ = Region.objects.get_or_create(
-            country_code=dataset["region_country_code"], defaults={"name": dataset["region_name"]}
+            country_code=dataset["region_country_code"], name=dataset["region_name"]
         )
 
         # retrieve corresponding identifier kind objs for dataset in db
