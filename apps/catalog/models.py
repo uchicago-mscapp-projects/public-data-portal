@@ -45,7 +45,7 @@ class Publisher(models.Model):
     name = models.TextField()
     kind = models.CharField(max_length=2, choices=PublisherKind)
 
-    url = models.URLField()
+    url = models.URLField(max_length=500)
     mirror = models.BooleanField(default=False)
 
     def __str__(self):
@@ -150,7 +150,7 @@ class DataSet(models.Model):
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT)
     region = models.ForeignKey(Region, on_delete=models.PROTECT)
 
-    source_url = models.URLField()
+    source_url = models.URLField(max_length=500)
     upstream_id = models.CharField(max_length=100)
     license = models.CharField(max_length=100)
 
@@ -185,9 +185,9 @@ class DataSetFile(models.Model):
     """
 
     dataset = models.ForeignKey(DataSet, on_delete=models.CASCADE, related_name="files")
-    original_url = models.URLField()
-    url = models.URLField()
-    mirrored_url = models.URLField(null=True)
+    original_url = models.URLField(max_length=500)
+    url = models.URLField(max_length=500)
+    mirrored_url = models.URLField(max_length=500, null=True)
     last_mirrored = models.DateTimeField(null=True)
     file_type = models.CharField(choices=FileType)
     file_size_mb = models.IntegerField()  # file size in megabytes
