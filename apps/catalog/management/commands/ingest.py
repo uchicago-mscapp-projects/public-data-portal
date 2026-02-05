@@ -42,7 +42,7 @@ def command(self, name: str, cleardb: bool = False, ingestonly: bool = False):
                 # combine the two here for now, better logic TBD
                 def get_full_datasets():
                     for pd in mod.list_datasets():
-                        #print(pd)
+                        # print(pd)
                         yield mod.get_dataset_details(pd)
 
         except ImportError as e:

@@ -139,7 +139,7 @@ class DataSet(models.Model):
           without creating a new release
     """
 
-    name = models.CharField(max_length=300)
+    name = models.CharField(max_length=500)
     description = models.TextField(blank=True)
 
     # define the time range covered by the data (if known)
