@@ -54,9 +54,9 @@ def get_dataset_details(pd: PartialDataset) -> UpstreamDataset:
     # automatic extraction for it
 
     ds = UpstreamDataset(
-        name=ld_record["name"],
-        description=ld_record["description"],
-        upstream_id=data["datasetid"],
+        name=ld_record["name"].strip(),
+        description=ld_record["description"].strip(),
+        upstream_id=data["datasetid"].strip(),
         source_url=pd.url,
         upstream_upload_time=parse_date(data["basic_metas"]["default"]["modified"]),
         license=data["basic_metas"]["default"].get("license", ""),
