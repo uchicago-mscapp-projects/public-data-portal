@@ -2,11 +2,28 @@
 
 This guide documents our development practices & serves as a reference for common commands.
 
-## Prerequisites
+## Getting Started
 
-This guide assumes you have `git` and `uv` configured, and have checked out a copy of the project.
+0. This guide assumes you have `git` and `uv` configured, and have checked out a copy of the project.
+1. Once you have checked the project out, you can check if it is working by running `DEBUG=true uv run manage.py runserver`
+  This should start the server in your browser. It won't have data, but is a good check to ensure things are working.
+2. Next, try to run a simple scraper using `uv run manage.py ingest us.cary_nc`
 
-## Git Branching
+## Writing a Scraper
+
+First, it may be helpful to familiarize yourself with the types in `ingestion/data_models.py`. These objects are used to ensure uniformity across data sources. Most fields are optional & somewhat self-explanatory, but if you have questions please ask!
+
+The general format for a scraper is a module in `ingestion` with two functions. If you open `scrapers.us.cary_nc` you'll see an example of both:
+
+- `list_datasets() -> Generator[PartialDataset]` This function should **`yield`** items of type `PartialDataset`. It should return a `PartialDataset` with a URL for *every* dataset on the source site. These URLs will then be fed to the second function.
+- `get_dataset_details(pd: PartialDataset) -> UpstreamDataset` This function should take a `PartialDataset` (URL) and return a completed `UpstreamDataset` with all relevant fields set. This is typically  done by scraping the detail pages for each dataset.
+
+You can test your code at any time by running:
+
+`uv run manage.py ingest path.to.yours` (path.to.yours is the import path after `ingestion.`, such as us.cary_nc).
+
+
+## Git Practices
 
 For development we are using a simple feature-branch workflow:
 
