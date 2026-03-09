@@ -1,33 +1,73 @@
-from typing import Generator
-from ingestion.data_models import PartialDataset
-from ingestion.utils import make_request, logger
+from dateutil.parser import parse as parse_date
+from ingestion.data_models import UpstreamDataset
+from ingestion.utils import make_request
+import json
+
+"""
+Simple ingestion script for NYC Open Data portal.
+Based on the chicago.py example.
+"""
+
+CATALOG = "https://data.cityofnewyork.us/api/catalog/v1?limit=100&offset={}"
+
+ODATA_URL = "https://data.cityofnewyork.us/api/odata/v4/{}"
 
 
-API_URL = "https://data.cityofnewyork.us/api/views.json"
+def extract_datasets(catalog):
 
+    datasets = []
 
-def list_datasets() -> Generator[PartialDataset, None, None]:
-    """
-    Fetch datasets from NYC Open Data.
-    """
+    for ds in catalog["results"]:
 
-    logger.info("Fetching NYC Open Data datasets")
+        rs = ds["resource"]
 
-    data = make_request(API_URL)
-
-    for d in data:
-
-        name = d.get("name")
-        description = d.get("description")
-        dataset_id = d.get("id")
-
-        if not dataset_id:
-            continue
-
-        url = f"https://data.cityofnewyork.us/d/{dataset_id}"
-
-        yield PartialDataset(
-            name=name,
-            description=description,
-            source_url=url,
+        dataset = UpstreamDataset(
+            name=rs["name"],
+            description=rs.get("description", ""),
+            upstream_upload_time=parse_date(rs["updatedAt"]),
+            publisher_name=rs.get("attribution") or "NYC Open Data",
+            publisher_url=rs.get("attribution_link"),
+            publisher_upstream_id=rs["id"],
+            region_name="New York City, NY",
+            region_country_code="us",
+            source_url=ds["permalink"],
+            upstream_id=rs["id"],
+            license="",
+            tags=[],
         )
+
+        download_url = ODATA_URL.format(dataset.upstream_id)
+
+        dataset.add_file(
+            url=download_url,
+            file_type="csv"
+        )
+
+        datasets.append(dataset)
+
+    return datasets
+
+
+def get_full_datasets():
+
+    offset = 0
+    all_datasets = []
+
+    while True:
+
+        url = CATALOG.format(offset)
+
+        resp = make_request(url)
+
+        catalog = json.loads(resp.text)
+
+        new_sets = extract_datasets(catalog)
+
+        if not new_sets:
+            break
+
+        all_datasets.extend(new_sets)
+
+        offset += 100
+
+    return all_datasets
