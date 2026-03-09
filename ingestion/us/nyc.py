@@ -24,18 +24,17 @@ def extract_datasets(catalog):
         dataset = UpstreamDataset(
             name=rs["name"],
             description=rs.get("description", ""),
-            upstream_upload_time=parse_date(rs["updatedAt"]),
+            upstream_upload_time=parse_date(rs["updatedAt"]) if rs.get("updatedAt") else None,
             publisher_name=rs.get("attribution") or "NYC Open Data",
             publisher_url=rs.get("attribution_link"),
             publisher_upstream_id=rs["id"],
             region_name="New York City, NY",
             region_country_code="us",
-            source_url=ds["permalink"],
+            source_url=ds.get("permalink", ""),
             upstream_id=rs["id"],
             license="",
             tags=[],
         )
-
         download_url = ODATA_URL.format(dataset.upstream_id)
 
         dataset.add_file(
